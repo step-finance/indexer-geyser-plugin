@@ -15,7 +15,7 @@ use crate::{
 
 /// Message data for an account update
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(into = "UiAccountUpdate")]
 pub struct AccountUpdate {
     /// The account's public key
     pub key: Pubkey,
@@ -29,6 +29,46 @@ pub struct AccountUpdate {
     pub rent_epoch: u64,
     /// The binary data stored on this account
     pub data: Vec<u8>,
+    /// Monotonic-increasing counter for sequencing on-chain writes
+    pub write_version: u64,
+    /// The slot in which this account was updated
+    pub slot: u64,
+    /// True if this update was triggered by a validator startup
+    pub is_startup: bool,
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<UiAccountUpdate> for AccountUpdate {
+    fn into(self) -> UiAccountUpdate {
+        UiAccountUpdate {
+            key: self.key.to_string(),
+            lamports: self.lamports,
+            owner: self.owner.to_string(),
+            executable: self.executable,
+            rent_epoch: self.rent_epoch,
+            data: base64::encode(self.data),
+            write_version: self.write_version,
+            slot: self.slot,
+            is_startup: self.is_startup,
+        }
+    }
+}
+
+/// json sserialized version of accountupdate
+#[derive(Debug, Clone, Serialize)]
+pub struct UiAccountUpdate {
+    /// The account's public key
+    pub key: String,
+    /// The lamport balance of the account
+    pub lamports: u64,
+    /// The Solana program controlling this account
+    pub owner: String,
+    /// True if the account's data is an executable smart contract
+    pub executable: bool,
+    /// The next epoch for which this account will owe rent
+    pub rent_epoch: u64,
+    /// The binary data stored on this account
+    pub data: String,
     /// Monotonic-increasing counter for sequencing on-chain writes
     pub write_version: u64,
     /// The slot in which this account was updated
