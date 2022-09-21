@@ -330,7 +330,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 slot,
                 block_time: None,
             };
-            let encoded_tx = full_tx.encode(UiTransactionEncoding::Json, Some(0))?;
+            let encoded_tx = full_tx.encode(UiTransactionEncoding::JsonParsed, Some(0))?;
 
             Ok(Some(Message::TransactionNotify(Box::new(
                 TransactionNotify {
