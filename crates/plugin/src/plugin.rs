@@ -4,6 +4,7 @@ use anyhow::Context;
 use hashbrown::HashSet;
 use indexer_rabbitmq::geyser::{AccountUpdate, InstructionNotify, Message, TransactionNotify};
 use solana_geyser_plugin_interface::geyser_plugin_interface::ReplicaTransactionInfo;
+use solana_geyser_plugin_interface::geyser_plugin_interface::{SlotStatus, ReplicaBlockInfoVersions};
 use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
 pub(crate) static TOKEN_KEY: Pubkey =
@@ -406,6 +407,24 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         )
     }
 
+    
+    /// Called when a slot status is updated
+    #[allow(unused_variables)]
+    fn update_slot_status(
+        &mut self,
+        slot: u64,
+        parent: Option<u64>,
+        status: SlotStatus,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    /// Called when block's metadata is updated.
+    #[allow(unused_variables)]
+    fn notify_block_metadata(&mut self, blockinfo: ReplicaBlockInfoVersions) -> Result<()> {
+        Ok(())
+    }
+
     fn account_data_notifications_enabled(&self) -> bool {
         let this = self.expect_inner();
         !this.acct_sel.is_empty()
@@ -415,4 +434,5 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         let this = self.expect_inner();
         !(this.ins_sel.is_empty() && this.tx_sel.is_empty())
     }
+
 }

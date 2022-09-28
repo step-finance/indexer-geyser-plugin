@@ -100,6 +100,30 @@ pub struct TransactionNotify {
     pub transaction: EncodedConfirmedTransactionWithStatusMeta,
 }
 
+/// Message data for an block metadata notification
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BlockMetadataNotify {
+    /// the slot of the block
+    pub slot: u64,
+    /// the hash of the block
+    pub blockhash: String,
+    /// the time of the block
+    pub block_time: i64,
+    /// the height of the block
+    pub block_height: u64,
+}
+
+/// Message data for an block metadata notification
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotStatusNotify {
+    /// the slot
+    pub slot: u64,
+    /// the parent of the slot
+    pub parent: Option<u64>,
+    /// the status
+    pub status: String,
+}
+
 /// A message transmitted by a Geyser plugin
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -110,6 +134,10 @@ pub enum Message {
     InstructionNotify(InstructionNotify),
     /// Indicates an instruction was included in a **successful** transaction
     TransactionNotify(Box<TransactionNotify>),
+    /// indicates a block meta data has become available
+    BlockMetadataNotify(BlockMetadataNotify),
+    /// indeicates the status of a slot has changed
+    SlotStatusNotify(SlotStatusNotify),
 }
 
 impl Message {

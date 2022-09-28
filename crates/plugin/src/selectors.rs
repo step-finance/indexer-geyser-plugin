@@ -53,6 +53,10 @@ impl AccountSelector {
         })
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.owners.is_empty() && self.pubkeys.is_empty()
+    }
+
     /// Lazy-load the token addresses.  Fails if token addresses are not wanted
     /// or if they have already been loaded.
     pub fn init_tokens(&mut self, addrs: HashSet<Pubkey>) {
