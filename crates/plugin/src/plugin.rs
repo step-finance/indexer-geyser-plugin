@@ -2,9 +2,12 @@ use std::{env, sync::Arc};
 
 use anyhow::Context;
 use hashbrown::HashSet;
-use indexer_rabbitmq::geyser::{AccountUpdate, InstructionNotify, Message, TransactionNotify};
-use solana_geyser_plugin_interface::geyser_plugin_interface::ReplicaTransactionInfo;
-use solana_geyser_plugin_interface::geyser_plugin_interface::{SlotStatus, ReplicaBlockInfoVersions};
+use indexer_rabbitmq::geyser::{
+    AccountUpdate, InstructionNotify, Message, SlotStatusNotify, TransactionNotify, BlockMetadataNotify,
+};
+use solana_geyser_plugin_interface::geyser_plugin_interface::{
+    ReplicaBlockInfoVersions, ReplicaTransactionInfo, SlotStatus,
+};
 use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
 pub(crate) static TOKEN_KEY: Pubkey =
@@ -407,7 +410,6 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         )
     }
 
-    
     /// Called when a slot status is updated
     #[allow(unused_variables)]
     fn update_slot_status(
@@ -416,13 +418,50 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         parent: Option<u64>,
         status: SlotStatus,
     ) -> Result<()> {
-        Ok(())
+        self.with_inner(
+            || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
+            |this| {
+                let msg = Message::SlotStatusNotify(SlotStatusNotify {
+                    slot,
+                    parent,
+                    status: String::from(status.as_str()),
+                });
+                this.spawn(|this| async move {
+                    this.producer.send(msg).await;
+                    this.metrics.sends.log(1);
+
+                    Ok(())
+                });
+                Ok(())
+            },
+        )
     }
 
     /// Called when block's metadata is updated.
     #[allow(unused_variables)]
     fn notify_block_metadata(&mut self, blockinfo: ReplicaBlockInfoVersions) -> Result<()> {
-        Ok(())
+        self.with_inner(
+            || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
+            |this| {
+                match blockinfo {
+                    ReplicaBlockInfoVersions::V0_0_1(bi) => {
+                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                            blockhash: String::from(bi.blockhash),
+                            slot: bi.slot,
+                            block_time: bi.block_time.unwrap_or_default(),
+                            block_height: bi.block_height.unwrap_or_default(),
+                        });
+                        this.spawn(|this| async move {
+                            this.producer.send(msg).await;
+                            this.metrics.sends.log(1);
+        
+                            Ok(())
+                        });
+                    },
+                }
+                Ok(())
+            },
+        )
     }
 
     fn account_data_notifications_enabled(&self) -> bool {
@@ -434,5 +473,4 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         let this = self.expect_inner();
         !(this.ins_sel.is_empty() && this.tx_sel.is_empty())
     }
-
 }

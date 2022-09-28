@@ -101,7 +101,8 @@ pub struct TransactionNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BlockMetadataNotify {
     /// the slot of the block
     pub slot: u64,
@@ -114,7 +115,8 @@ pub struct BlockMetadataNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SlotStatusNotify {
     /// the slot
     pub slot: u64,
@@ -148,6 +150,8 @@ impl Message {
             Message::AccountUpdate(_) => Some("account"),
             Message::InstructionNotify(_) => Some("instruction"),
             Message::TransactionNotify(_) => Some("transaction"),
+            Message::BlockMetadataNotify(_) => Some("block_meta"),
+            Message::SlotStatusNotify(_) => Some("slot_status"),
         }
     }
 }
