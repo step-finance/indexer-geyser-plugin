@@ -15,6 +15,9 @@ pub struct Config {
     #[serde(default)]
     metrics: Metrics,
 
+    #[serde(default)]
+    chain_progress: ChainProgress,
+
     accounts: Accounts,
     instructions: Instructions,
     transactions: Transactions,
@@ -47,6 +50,13 @@ pub struct Jobs {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Metrics {
     pub config: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ChainProgress {
+    pub block_meta: Option<bool>,
+    pub slot_status: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,6 +124,7 @@ impl Config {
         Amqp,
         Jobs,
         Metrics,
+        ChainProgress,
         AccountSelector,
         InstructionSelector,
         TransactionSelector,
@@ -122,6 +133,7 @@ impl Config {
             amqp,
             jobs,
             metrics,
+            chain_progress,
             accounts,
             instructions,
             transactions,
@@ -135,6 +147,6 @@ impl Config {
         let txs = TransactionSelector::from_config(transactions)
             .context("Failed to create instruction selector")?;
 
-        Ok((amqp, jobs, metrics, acct, ins, txs))
+        Ok((amqp, jobs, metrics, chain_progress, acct, ins, txs))
     }
 }
