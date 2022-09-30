@@ -147,11 +147,11 @@ impl Message {
     #[must_use]
     pub fn routing_key(&self) -> Option<&str> {
         match self {
-            Message::AccountUpdate(_) => Some("account"),
-            Message::InstructionNotify(_) => Some("instruction"),
-            Message::TransactionNotify(_) => Some("transaction"),
-            Message::BlockMetadataNotify(_) => Some("block_meta"),
-            Message::SlotStatusNotify(_) => Some("slot_status"),
+            Message::AccountUpdate(_) => Some("sf.account"),
+            Message::InstructionNotify(_) => Some("sf.tx.instruction"),
+            Message::TransactionNotify(_) => Some("sf.tx.transaction"),
+            Message::BlockMetadataNotify(_) => Some("sf.chain.block_meta"),
+            Message::SlotStatusNotify(_) => Some("sf.chain.slot_status"),
         }
     }
 }
@@ -220,7 +220,7 @@ impl QueueType {
             props: QueueProps {
                 exchange,
                 queue,
-                binding: Binding::Direct(String::from("unused")),
+                binding: Binding::Topic(String::from("unused")),
                 prefetch: 4096,
                 max_len_bytes: if suffix.is_debug() || matches!(startup_type, StartupType::Normal) {
                     100 * 1024 * 1024 // 100 MiB
