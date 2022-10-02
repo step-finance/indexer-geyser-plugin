@@ -22,6 +22,7 @@ producer = ["suffix"]
 search-indexer = ["solana-program", "suffix"]
 suffix = ["clap"]
 produce-json = []
+consume-json = []
 
 [dependencies]
 clap = { version = "3.1.12", default-features = false, features = ["env", "std"], optional = true }

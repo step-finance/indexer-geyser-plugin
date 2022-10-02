@@ -55,7 +55,7 @@ impl Sender {
 
         Producer::new(
             &conn,
-            QueueType::new(amqp.network, startup_type, &Suffix::ProductionUnchecked)?,
+            QueueType::new(amqp.network, startup_type, &Suffix::ProductionUnchecked, "processed")?,
         )
         .await
     }

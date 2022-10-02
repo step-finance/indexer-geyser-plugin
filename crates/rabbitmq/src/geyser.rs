@@ -204,15 +204,16 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix) -> Result<Self> {
+    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: &str) -> Result<Self> {
         let exchange = format!(
-            "{}{}.messages",
+            "{}{}.{}.messages",
             network,
             match startup_type {
                 StartupType::Normal => "",
                 StartupType::Startup => ".startup",
                 StartupType::All => ".startup-all",
-            }
+            },
+            confirm_level,
         );
         let queue = suffix.format(format!("{}.indexer", exchange))?;
 
