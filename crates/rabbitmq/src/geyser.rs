@@ -115,7 +115,7 @@ pub struct BlockMetadataNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotStatusNotify {
     /// the slot
@@ -123,7 +123,23 @@ pub struct SlotStatusNotify {
     /// the parent of the slot
     pub parent: Option<u64>,
     /// the status
-    pub status: String,
+    pub status: SlotStatus,
+}
+
+/// The current status of a slot
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[serde(rename_all = "camelCase")]
+pub enum SlotStatus {
+    /// The highest slot of the heaviest fork processed by the node. Ledger state at this slot is
+    /// not derived from a confirmed or finalized block, but if multiple forks are present, is from
+    /// the fork the validator believes is most likely to finalize.
+    Processed,
+
+    /// The highest slot having reached max vote lockout.
+    Rooted,
+
+    /// The highest slot that has been voted on by supermajority of the cluster, ie. is confirmed.
+    Confirmed,
 }
 
 /// A message transmitted by a Geyser plugin
@@ -186,6 +202,18 @@ pub enum StartupType {
     All,
 }
 
+/// Committment levels
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
+#[strum(serialize_all = "kebab-case")]
+pub enum CommittmentLevel {
+    /// seen
+    Processed,
+    /// optimistic confirmation
+    Confirmed,
+    /// finalized
+    Rooted,
+}
+
 impl StartupType {
     /// Construct a [`StartupType`] from the Geyser plugin `startup` filter.
     #[must_use]
@@ -204,7 +232,7 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: &str) -> Result<Self> {
+    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: CommittmentLevel) -> Result<Self> {
         let exchange = format!(
             "{}{}.{}.messages",
             network,
