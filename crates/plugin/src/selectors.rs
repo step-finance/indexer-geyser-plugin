@@ -77,7 +77,7 @@ impl AccountSelector {
 
     #[inline]
     pub fn is_selected(&self, acct: &ReplicaAccountInfo, is_startup: bool) -> bool {
-        let ReplicaAccountInfo { owner, data, .. } = *acct;
+        let ReplicaAccountInfo { owner, /*data,*/ .. } = *acct;
 
         if self.startup.map_or(false, |s| is_startup != s)
             || !(self.owners.contains(owner) || self.pubkeys.contains(acct.pubkey))
@@ -85,17 +85,19 @@ impl AccountSelector {
             return false;
         }
 
-        if owner == TOKEN_KEY.as_ref() && data.len() == TokenAccount::get_packed_len() {
-            if let Some(ref addrs) = self.token_addresses {
-                let token_account = TokenAccount::unpack_from_slice(data);
+        // commented out for step, we'll never use this
 
-                if let Ok(token_account) = token_account {
-                    if token_account.amount > 1 || addrs.contains(&token_account.mint) {
-                        return false;
-                    }
-                }
-            }
-        }
+        // if owner == TOKEN_KEY.as_ref() && data.len() == TokenAccount::get_packed_len() {
+        //     if let Some(ref addrs) = self.token_addresses {
+        //         let token_account = TokenAccount::unpack_from_slice(data);
+
+        //         if let Ok(token_account) = token_account {
+        //             if token_account.amount > 1 || addrs.contains(&token_account.mint) {
+        //                 return false;
+        //             }
+        //         }
+        //     }
+        // }
 
         true
     }

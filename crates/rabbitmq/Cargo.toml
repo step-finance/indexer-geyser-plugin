@@ -35,7 +35,7 @@ base64 = "0.13.0"
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = { version = "1.0.79" }
 # TODO: tighten this bound once more things support 1.10
-solana-program = { version = ">=1.9", optional = true }
+solana-program = { version = "1.10.39", optional = true }
+solana-transaction-status = "1.10.39"
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.30"
-solana-transaction-status = "~1.10.25"

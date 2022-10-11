@@ -227,7 +227,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         self.with_inner(
             || GeyserPluginError::AccountsUpdateError { msg: UNINIT.into() },
             |this| {
-                this.metrics.recvs.log(1);
+                // this.metrics.recvs.log(1);
 
                 match account {
                     ReplicaAccountInfoVersions::V0_0_1(acct) => {
@@ -431,7 +431,11 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 let msg = Message::SlotStatusNotify(SlotStatusNotify {
                     slot,
                     parent,
-                    status: String::from(status.as_str()),
+                    status: match status {
+                        SlotStatus::Processed => indexer_rabbitmq::geyser::SlotStatus::Processed,
+                        SlotStatus::Confirmed => indexer_rabbitmq::geyser::SlotStatus::Confirmed,
+                        SlotStatus::Rooted => indexer_rabbitmq::geyser::SlotStatus::Rooted,
+                    },
                 });
                 this.spawn(|this| async move {
                     this.producer.send(msg).await;

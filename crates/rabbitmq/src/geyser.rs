@@ -232,7 +232,7 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: CommittmentLevel) -> Result<Self> {
+    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: CommittmentLevel, routing_key: String) -> Result<Self> {
         let exchange = format!(
             "{}{}.{}.messages",
             network,
@@ -243,13 +243,13 @@ impl QueueType {
             },
             confirm_level,
         );
-        let queue = suffix.format(format!("{}.indexer", exchange))?;
+        let queue = suffix.format(format!("{}", exchange))?;
 
         Ok(Self {
             props: QueueProps {
                 exchange,
                 queue,
-                binding: Binding::Topic(String::from("unused")),
+                binding: Binding::Topic(routing_key),
                 prefetch: 4096,
                 max_len_bytes: if suffix.is_debug() || matches!(startup_type, StartupType::Normal) {
                     100 * 1024 * 1024 // 100 MiB
