@@ -1254,8 +1254,8 @@ dependencies = [
  "rmp-serde",
  "serde",
  "serde_json",
- "solana-program",
- "solana-transaction-status",
+ "solana-program 1.10.39",
+ "solana-transaction-status 1.10.42",
  "strum",
  "thiserror",
 ]
@@ -1277,10 +1277,10 @@ dependencies = [
  "serde_json",
  "serde_with",
  "solana-geyser-plugin-interface",
- "solana-logger",
- "solana-metrics",
- "solana-program",
- "solana-transaction-status",
+ "solana-logger 1.10.39",
+ "solana-metrics 1.10.39",
+ "solana-program 1.10.39",
+ "solana-transaction-status 1.10.39",
  "spl-token",
  "tokio",
  "tokio-executor-trait",
@@ -2611,9 +2611,32 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "solana-config-program",
- "solana-sdk",
- "solana-vote-program",
+ "solana-config-program 1.10.39",
+ "solana-sdk 1.10.39",
+ "solana-vote-program 1.10.39",
+ "spl-token",
+ "spl-token-2022",
+ "thiserror",
+ "zstd",
+]
+
+[[package]]
+name = "solana-account-decoder"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "Inflector",
+ "base64 0.13.0",
+ "bincode",
+ "bs58",
+ "bv",
+ "lazy_static",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "solana-config-program 1.10.42",
+ "solana-sdk 1.10.42",
+ "solana-vote-program 1.10.42",
  "spl-token",
  "spl-token-2022",
  "thiserror",
@@ -2630,8 +2653,21 @@ dependencies = [
  "chrono",
  "serde",
  "serde_derive",
- "solana-program-runtime",
- "solana-sdk",
+ "solana-program-runtime 1.10.39",
+ "solana-sdk 1.10.39",
+]
+
+[[package]]
+name = "solana-config-program"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "bincode",
+ "chrono",
+ "serde",
+ "serde_derive",
+ "solana-program-runtime 1.10.42",
+ "solana-sdk 1.10.42",
 ]
 
 [[package]]
@@ -2652,7 +2688,28 @@ dependencies = [
  "serde_bytes",
  "serde_derive",
  "sha2 0.10.2",
- "solana-frozen-abi-macro",
+ "solana-frozen-abi-macro 1.10.39",
+ "thiserror",
+]
+
+[[package]]
+name = "solana-frozen-abi"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "bs58",
+ "bv",
+ "generic-array",
+ "im",
+ "lazy_static",
+ "log",
+ "memmap2",
+ "rustc_version",
+ "serde",
+ "serde_bytes",
+ "serde_derive",
+ "sha2 0.10.2",
+ "solana-frozen-abi-macro 1.10.42",
  "thiserror",
 ]
 
@@ -2669,14 +2726,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-frozen-abi-macro"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rustc_version",
+ "syn",
+]
+
+[[package]]
 name = "solana-geyser-plugin-interface"
 version = "1.10.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c8f3beaa011b5c1455c2a5fce230ae852b045c8bdadb3dab4096bebe6f1b2b0"
 dependencies = [
  "log",
- "solana-sdk",
- "solana-transaction-status",
+ "solana-sdk 1.10.39",
+ "solana-transaction-status 1.10.39",
  "thiserror",
 ]
 
@@ -2692,13 +2760,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-logger"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "env_logger",
+ "lazy_static",
+ "log",
+]
+
+[[package]]
 name = "solana-measure"
 version = "1.10.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6edaeb5c27a35cb784f4a208341942af89043b41b8e5f60c437a491005150bdc"
 dependencies = [
  "log",
- "solana-sdk",
+ "solana-sdk 1.10.39",
+]
+
+[[package]]
+name = "solana-measure"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "log",
+ "solana-sdk 1.10.42",
 ]
 
 [[package]]
@@ -2712,7 +2799,20 @@ dependencies = [
  "lazy_static",
  "log",
  "reqwest",
- "solana-sdk",
+ "solana-sdk 1.10.39",
+]
+
+[[package]]
+name = "solana-metrics"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "crossbeam-channel",
+ "gethostname",
+ "lazy_static",
+ "log",
+ "reqwest",
+ "solana-sdk 1.10.42",
 ]
 
 [[package]]
@@ -2750,9 +2850,50 @@ dependencies = [
  "serde_derive",
  "sha2 0.10.2",
  "sha3 0.10.2",
- "solana-frozen-abi",
- "solana-frozen-abi-macro",
- "solana-sdk-macro",
+ "solana-frozen-abi 1.10.39",
+ "solana-frozen-abi-macro 1.10.39",
+ "solana-sdk-macro 1.10.39",
+ "thiserror",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "solana-program"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "base64 0.13.0",
+ "bincode",
+ "bitflags",
+ "blake3",
+ "borsh",
+ "borsh-derive",
+ "bs58",
+ "bv",
+ "bytemuck",
+ "console_error_panic_hook",
+ "console_log",
+ "curve25519-dalek",
+ "getrandom 0.1.16",
+ "itertools",
+ "js-sys",
+ "lazy_static",
+ "libsecp256k1",
+ "log",
+ "num-derive",
+ "num-traits",
+ "parking_lot",
+ "rand 0.7.3",
+ "rustc_version",
+ "rustversion",
+ "serde",
+ "serde_bytes",
+ "serde_derive",
+ "sha2 0.10.2",
+ "sha3 0.10.2",
+ "solana-frozen-abi 1.10.42",
+ "solana-frozen-abi-macro 1.10.42",
+ "solana-sdk-macro 1.10.42",
  "thiserror",
  "wasm-bindgen",
 ]
@@ -2774,10 +2915,33 @@ dependencies = [
  "num-traits",
  "rustc_version",
  "serde",
- "solana-frozen-abi",
- "solana-frozen-abi-macro",
- "solana-measure",
- "solana-sdk",
+ "solana-frozen-abi 1.10.39",
+ "solana-frozen-abi-macro 1.10.39",
+ "solana-measure 1.10.39",
+ "solana-sdk 1.10.39",
+ "thiserror",
+]
+
+[[package]]
+name = "solana-program-runtime"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "base64 0.13.0",
+ "bincode",
+ "enum-iterator",
+ "itertools",
+ "libc",
+ "libloading",
+ "log",
+ "num-derive",
+ "num-traits",
+ "rustc_version",
+ "serde",
+ "solana-frozen-abi 1.10.42",
+ "solana-frozen-abi-macro 1.10.42",
+ "solana-measure 1.10.42",
+ "solana-sdk 1.10.42",
  "thiserror",
 ]
 
@@ -2822,11 +2986,61 @@ dependencies = [
  "serde_json",
  "sha2 0.10.2",
  "sha3 0.10.2",
- "solana-frozen-abi",
- "solana-frozen-abi-macro",
- "solana-logger",
- "solana-program",
- "solana-sdk-macro",
+ "solana-frozen-abi 1.10.39",
+ "solana-frozen-abi-macro 1.10.39",
+ "solana-logger 1.10.39",
+ "solana-program 1.10.39",
+ "solana-sdk-macro 1.10.39",
+ "thiserror",
+ "uriparse",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "solana-sdk"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "assert_matches",
+ "base64 0.13.0",
+ "bincode",
+ "bitflags",
+ "borsh",
+ "bs58",
+ "bytemuck",
+ "byteorder",
+ "chrono",
+ "derivation-path",
+ "digest 0.10.3",
+ "ed25519-dalek",
+ "ed25519-dalek-bip32",
+ "generic-array",
+ "hmac 0.12.1",
+ "itertools",
+ "js-sys",
+ "lazy_static",
+ "libsecp256k1",
+ "log",
+ "memmap2",
+ "num-derive",
+ "num-traits",
+ "pbkdf2",
+ "qstring",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rustc_version",
+ "rustversion",
+ "serde",
+ "serde_bytes",
+ "serde_derive",
+ "serde_json",
+ "sha2 0.10.2",
+ "sha3 0.10.2",
+ "solana-frozen-abi 1.10.42",
+ "solana-frozen-abi-macro 1.10.42",
+ "solana-logger 1.10.42",
+ "solana-program 1.10.42",
+ "solana-sdk-macro 1.10.42",
  "thiserror",
  "uriparse",
  "wasm-bindgen",
@@ -2837,6 +3051,18 @@ name = "solana-sdk-macro"
 version = "1.10.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89a9241b0327549f0331b46463c48226e9d76fb470fa537d98086035d894a578"
+dependencies = [
+ "bs58",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn",
+]
+
+[[package]]
+name = "solana-sdk-macro"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2861,11 +3087,38 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "solana-account-decoder",
- "solana-measure",
- "solana-metrics",
- "solana-sdk",
- "solana-vote-program",
+ "solana-account-decoder 1.10.39",
+ "solana-measure 1.10.39",
+ "solana-metrics 1.10.39",
+ "solana-sdk 1.10.39",
+ "solana-vote-program 1.10.39",
+ "spl-associated-token-account",
+ "spl-memo",
+ "spl-token",
+ "spl-token-2022",
+ "thiserror",
+]
+
+[[package]]
+name = "solana-transaction-status"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "Inflector",
+ "base64 0.13.0",
+ "bincode",
+ "borsh",
+ "bs58",
+ "lazy_static",
+ "log",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "solana-account-decoder 1.10.42",
+ "solana-measure 1.10.42",
+ "solana-metrics 1.10.42",
+ "solana-sdk 1.10.42",
+ "solana-vote-program 1.10.42",
  "spl-associated-token-account",
  "spl-memo",
  "spl-token",
@@ -2886,11 +3139,31 @@ dependencies = [
  "rustc_version",
  "serde",
  "serde_derive",
- "solana-frozen-abi",
- "solana-frozen-abi-macro",
- "solana-metrics",
- "solana-program-runtime",
- "solana-sdk",
+ "solana-frozen-abi 1.10.39",
+ "solana-frozen-abi-macro 1.10.39",
+ "solana-metrics 1.10.39",
+ "solana-program-runtime 1.10.39",
+ "solana-sdk 1.10.39",
+ "thiserror",
+]
+
+[[package]]
+name = "solana-vote-program"
+version = "1.10.42"
+source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#332f93090fdd4c8fdd3c6c6dd3b2b76021e20387"
+dependencies = [
+ "bincode",
+ "log",
+ "num-derive",
+ "num-traits",
+ "rustc_version",
+ "serde",
+ "serde_derive",
+ "solana-frozen-abi 1.10.42",
+ "solana-frozen-abi-macro 1.10.42",
+ "solana-metrics 1.10.42",
+ "solana-program-runtime 1.10.42",
+ "solana-sdk 1.10.42",
  "thiserror",
 ]
 
@@ -2917,8 +3190,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3 0.9.1",
- "solana-program",
- "solana-sdk",
+ "solana-program 1.10.39",
+ "solana-sdk 1.10.39",
  "subtle",
  "thiserror",
  "zeroize",
@@ -2949,7 +3222,7 @@ dependencies = [
  "borsh",
  "num-derive",
  "num-traits",
- "solana-program",
+ "solana-program 1.10.39",
  "spl-token",
  "spl-token-2022",
  "thiserror",
@@ -2961,7 +3234,7 @@ version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd0dc6f70db6bacea7ff25870b016a65ba1d1b6013536f08e4fd79a8f9005325"
 dependencies = [
- "solana-program",
+ "solana-program 1.10.39",
 ]
 
 [[package]]
@@ -2975,7 +3248,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "num_enum",
- "solana-program",
+ "solana-program 1.10.39",
  "thiserror",
 ]
 
@@ -2990,7 +3263,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "num_enum",
- "solana-program",
+ "solana-program 1.10.39",
  "solana-zk-token-sdk",
  "spl-memo",
  "spl-token",

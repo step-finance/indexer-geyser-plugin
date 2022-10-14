@@ -6,6 +6,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 pub use solana_program::pubkey::Pubkey;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
+use strum::Display;
 
 use crate::{
     queue_type::{Binding, QueueProps, RetryProps},
@@ -93,7 +94,7 @@ pub struct InstructionNotify {
 }
 
 /// Message data for an instruction notification
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct TransactionNotify {
     /// the transactions
@@ -127,7 +128,7 @@ pub struct SlotStatusNotify {
 }
 
 /// The current status of a slot
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Display)]
 #[serde(rename_all = "camelCase")]
 pub enum SlotStatus {
     /// The highest slot of the heaviest fork processed by the node. Ledger state at this slot is
@@ -161,7 +162,7 @@ pub enum Message {
 impl Message {
     /// the routing key to use for this message type
     #[must_use]
-    pub fn routing_key(&self) -> Option<&str> {
+    pub fn routing_key<'a, 'b>(&'a self) -> Option<&'b str> {
         match self {
             Message::AccountUpdate(_) => Some("sf.account"),
             Message::InstructionNotify(_) => Some("sf.tx.instruction"),
