@@ -9,6 +9,10 @@
   },
   "metrics": {
   },
+  "chainProgress": {
+    "blockMeta": true,
+    "slotStatus": true
+  },
   "accounts": {
     "owners": [],
     "pubkeys": [],

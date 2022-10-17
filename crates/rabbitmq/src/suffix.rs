@@ -34,6 +34,7 @@ impl clap::Args for Suffix {
         )
         .arg(
             Arg::new("SUFFIX")
+                .env("SUFFIX")
                 .takes_value(true)
                 .allow_invalid_utf8(true)
                 .required(false)
