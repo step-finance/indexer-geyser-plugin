@@ -233,7 +233,13 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix, confirm_level: CommittmentLevel, routing_key: String) -> Result<Self> {
+    pub fn new(
+        network: Network,
+        startup_type: StartupType,
+        suffix: &Suffix,
+        confirm_level: CommittmentLevel,
+        routing_key: String,
+    ) -> Result<Self> {
         let exchange = format!(
             "{}{}.{}.messages",
             network,
