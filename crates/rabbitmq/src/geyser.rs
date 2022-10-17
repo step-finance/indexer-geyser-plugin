@@ -6,6 +6,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 pub use solana_program::pubkey::Pubkey;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
+use strum::Display;
 
 use crate::{
     queue_type::{Binding, QueueProps, RetryProps},
@@ -93,11 +94,53 @@ pub struct InstructionNotify {
 }
 
 /// Message data for an instruction notification
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct TransactionNotify {
     /// the transactions
     pub transaction: EncodedConfirmedTransactionWithStatusMeta,
+}
+
+/// Message data for an block metadata notification
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlockMetadataNotify {
+    /// the slot of the block
+    pub slot: u64,
+    /// the hash of the block
+    pub blockhash: String,
+    /// the time of the block
+    pub block_time: i64,
+    /// the height of the block
+    pub block_height: u64,
+}
+
+/// Message data for an block metadata notification
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotStatusNotify {
+    /// the slot
+    pub slot: u64,
+    /// the parent of the slot
+    pub parent: Option<u64>,
+    /// the status
+    pub status: SlotStatus,
+}
+
+/// The current status of a slot
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Display)]
+#[serde(rename_all = "camelCase")]
+pub enum SlotStatus {
+    /// The highest slot of the heaviest fork processed by the node. Ledger state at this slot is
+    /// not derived from a confirmed or finalized block, but if multiple forks are present, is from
+    /// the fork the validator believes is most likely to finalize.
+    Processed,
+
+    /// The highest slot having reached max vote lockout.
+    Rooted,
+
+    /// The highest slot that has been voted on by supermajority of the cluster, ie. is confirmed.
+    Confirmed,
 }
 
 /// A message transmitted by a Geyser plugin
@@ -110,16 +153,22 @@ pub enum Message {
     InstructionNotify(InstructionNotify),
     /// Indicates an instruction was included in a **successful** transaction
     TransactionNotify(Box<TransactionNotify>),
+    /// indicates a block meta data has become available
+    BlockMetadataNotify(BlockMetadataNotify),
+    /// indeicates the status of a slot has changed
+    SlotStatusNotify(SlotStatusNotify),
 }
 
 impl Message {
     /// the routing key to use for this message type
     #[must_use]
-    pub fn routing_key(&self) -> Option<&str> {
+    pub fn routing_key<'a, 'b>(&'a self) -> Option<&'b str> {
         match self {
-            Message::AccountUpdate(_) => Some("account"),
-            Message::InstructionNotify(_) => Some("instruction"),
-            Message::TransactionNotify(_) => Some("transaction"),
+            Message::AccountUpdate(_) => Some("sf.account"),
+            Message::InstructionNotify(_) => Some("sf.tx.instruction"),
+            Message::TransactionNotify(_) => Some("sf.tx.transaction"),
+            Message::BlockMetadataNotify(_) => Some("sf.chain.block_meta"),
+            Message::SlotStatusNotify(_) => Some("sf.chain.slot_status"),
         }
     }
 }
@@ -154,6 +203,18 @@ pub enum StartupType {
     All,
 }
 
+/// Committment levels
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
+#[strum(serialize_all = "kebab-case")]
+pub enum CommittmentLevel {
+    /// seen
+    Processed,
+    /// optimistic confirmation
+    Confirmed,
+    /// finalized
+    Rooted,
+}
+
 impl StartupType {
     /// Construct a [`StartupType`] from the Geyser plugin `startup` filter.
     #[must_use]
@@ -172,23 +233,30 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(network: Network, startup_type: StartupType, suffix: &Suffix) -> Result<Self> {
+    pub fn new(
+        network: Network,
+        startup_type: StartupType,
+        suffix: &Suffix,
+        confirm_level: CommittmentLevel,
+        routing_key: String,
+    ) -> Result<Self> {
         let exchange = format!(
-            "{}{}.messages",
+            "{}{}.{}.messages",
             network,
             match startup_type {
                 StartupType::Normal => "",
                 StartupType::Startup => ".startup",
                 StartupType::All => ".startup-all",
-            }
+            },
+            confirm_level,
         );
-        let queue = suffix.format(format!("{}.indexer", exchange))?;
+        let queue = suffix.format(format!("{}", exchange))?;
 
         Ok(Self {
             props: QueueProps {
                 exchange,
                 queue,
-                binding: Binding::Direct(String::from("unused")),
+                binding: Binding::Topic(routing_key),
                 prefetch: 4096,
                 max_len_bytes: if suffix.is_debug() || matches!(startup_type, StartupType::Normal) {
                     100 * 1024 * 1024 // 100 MiB

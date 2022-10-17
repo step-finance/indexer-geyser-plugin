@@ -32,6 +32,7 @@ pub trait QueueType {
 pub enum Binding {
     Fanout,
     Direct(String),
+    Topic(String),
 }
 
 #[cfg(feature = "consumer")]
@@ -40,6 +41,7 @@ impl Binding {
         match self {
             Self::Fanout => "",
             Self::Direct(k) => k.as_ref(),
+            Self::Topic(k) => k.as_ref(),
         }
     }
 }
@@ -85,6 +87,7 @@ impl<'a> QueueInfo<'a> {
         chan.exchange_declare(
             self.0.exchange.as_ref(),
             match self.0.binding {
+                Binding::Topic(_) => ExchangeKind::Topic,
                 Binding::Fanout => ExchangeKind::Fanout,
                 Binding::Direct(_) => ExchangeKind::Direct,
             },

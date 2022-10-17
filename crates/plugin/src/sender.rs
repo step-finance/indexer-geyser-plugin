@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use indexer_rabbitmq::{
-    geyser::{Message, Producer, QueueType, StartupType},
+    geyser::{CommittmentLevel, Message, Producer, QueueType, StartupType},
     lapin::{Connection, ConnectionProperties},
     suffix::Suffix,
 };
@@ -55,7 +55,13 @@ impl Sender {
 
         Producer::new(
             &conn,
-            QueueType::new(amqp.network, startup_type, &Suffix::ProductionUnchecked)?,
+            QueueType::new(
+                amqp.network,
+                startup_type,
+                &Suffix::ProductionUnchecked,
+                CommittmentLevel::Processed,
+                "unused".to_string(),
+            )?,
         )
         .await
     }

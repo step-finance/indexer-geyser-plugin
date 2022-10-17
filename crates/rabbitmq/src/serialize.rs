@@ -7,7 +7,7 @@ use std::io::Write;
 ///
 /// # Errors
 /// This function fails if an I/O error occurs or a wire format error occurs.
-#[cfg(not(feature = "produce-json"))]
+#[cfg(all(feature = "producer", not(feature = "produce-json")))]
 pub fn serialize<M: serde::Serialize>(
     w: impl Write,
     msg: &M,
@@ -34,11 +34,24 @@ pub fn json<M: serde::Serialize>(w: impl Write, msg: &M) -> Result<(), serde_jso
 ///
 /// # Errors
 /// This function fails if an I/O error occurs or a wire format error occurs.
-#[cfg(feature = "consumer")]
+#[cfg(all(feature = "consumer", not(feature = "consume-json")))]
 pub fn deserialize<M: for<'a> serde::Deserialize<'a>>(
     r: impl Read,
 ) -> Result<M, rmp_serde::decode::Error> {
     let mut de = rmp_serde::Deserializer::new(r).with_binary();
+
+    M::deserialize(&mut de)
+}
+
+/// Deserialize a message from a [`Read`] stream
+///
+/// # Errors
+/// This function fails if an I/O error occurs or a wire format error occurs.
+#[cfg(feature = "consume-json")]
+pub fn deserialize<M: for<'a> serde::Deserialize<'a>>(
+    r: impl Read,
+) -> Result<M, serde_json::error::Error> {
+    let mut de = serde_json::Deserializer::from_reader(r);
 
     M::deserialize(&mut de)
 }
