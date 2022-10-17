@@ -250,7 +250,7 @@ impl QueueType {
             },
             confirm_level,
         );
-        let queue = suffix.format(format!("{}", exchange))?;
+        let queue = suffix.format(exchange.to_string())?;
 
         Ok(Self {
             props: QueueProps {
