@@ -40,8 +40,7 @@ impl Binding {
     fn routing_key(&self) -> &str {
         match self {
             Self::Fanout => "",
-            Self::Direct(k) => k.as_ref(),
-            Self::Topic(k) => k.as_ref(),
+            Self::Direct(k) | Self::Topic(k) => k.as_ref(),
         }
     }
 }
