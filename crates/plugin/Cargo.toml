@@ -1,8 +1,9 @@
 [package]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.5.0"
+version = "0.6.0"
 authors = [
   "ryans <ryans@holaplex.com>",
+  "Dana <dana@step.finance>",
 ]
 edition = "2021"
 description = "Solana Geyser plugin adapter for holaplex-indexer RabbitMQ transport"
@@ -32,12 +33,13 @@ serde_with = "2.0.0"
 tokio-executor-trait = "2.1.0"
 tokio-reactor-trait = "1.1.0"
 itertools = "0.10.4"
+thiserror = "1.0.30"
 
-solana-geyser-plugin-interface = "1.10.39"
-solana-logger = "1.10.39"
-solana-program = "1.10.39"
-solana-metrics = "1.10.39"
-solana-transaction-status = "1.10.39"
+solana-geyser-plugin-interface = "=1.10.39"
+solana-logger = "=1.10.39"
+solana-program = "=1.10.39"
+solana-metrics = "=1.10.39"
+solana-transaction-status = "=1.10.39"
 spl-token = "3.3.1"
 
 [dependencies.tokio]
@@ -53,7 +55,6 @@ features = [
 
 [dependencies.indexer-rabbitmq]
 package = "holaplex-indexer-rabbitmq"
-version = "=0.2.0"
 path = "../rabbitmq"
 default-features = false
 features = ["producer", "produce-json", "geyser"]

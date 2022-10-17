@@ -26,3 +26,10 @@ incremental = true
 [profile.docker]
 inherits = "release"
 # strip = "symbols" # Not supported in the workspace toolchain version
+
+[patch.crates-io]
+solana-transaction-status = { git = 'https://github.com/step-finance/solana.git', branch = "SF-1765-block-notify" }
+solana-geyser-plugin-interface = { git = 'https://github.com/step-finance/solana.git', branch = "SF-1765-block-notify" }
+solana-logger = { git = 'https://github.com/step-finance/solana.git', branch = "SF-1765-block-notify" }
+solana-program = { git = 'https://github.com/step-finance/solana.git', branch = "SF-1765-block-notify" }
+solana-metrics = { git = 'https://github.com/step-finance/solana.git', branch = "SF-1765-block-notify" }
