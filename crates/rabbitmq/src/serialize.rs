@@ -43,7 +43,6 @@ pub fn deserialize<M: for<'a> serde::Deserialize<'a>>(
     M::deserialize(&mut de)
 }
 
-
 /// Deserialize a message from a [`Read`] stream
 ///
 /// # Errors

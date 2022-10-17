@@ -2,8 +2,7 @@ use hashbrown::HashSet;
 use indexer_rabbitmq::geyser::StartupType;
 use itertools::Itertools;
 use solana_geyser_plugin_interface::geyser_plugin_interface::ReplicaTransactionInfo;
-use solana_program::{instruction::CompiledInstruction, program_pack::Pack};
-use spl_token::state::Account as TokenAccount;
+use solana_program::instruction::CompiledInstruction;
 
 use crate::{
     config::{Accounts, Instructions, Transactions},
@@ -77,7 +76,9 @@ impl AccountSelector {
 
     #[inline]
     pub fn is_selected(&self, acct: &ReplicaAccountInfo, is_startup: bool) -> bool {
-        let ReplicaAccountInfo { owner, /*data,*/ .. } = *acct;
+        let ReplicaAccountInfo {
+            owner, /*data,*/ ..
+        } = *acct;
 
         if self.startup.map_or(false, |s| is_startup != s)
             || !(self.owners.contains(owner) || self.pubkeys.contains(acct.pubkey))
