@@ -258,7 +258,7 @@ impl QueueType {
                 queue,
                 binding: Binding::Topic(routing_key),
                 prefetch: 4096,
-                max_len_bytes: if suffix.is_debug() || matches!(startup_type, StartupType::Normal) {
+                max_len_bytes: if suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
                 } else {
                     8 * 1024 * 1024 * 1024 // 8 GiB
