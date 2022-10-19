@@ -240,7 +240,7 @@ impl QueueType {
         confirm_level: CommittmentLevel,
         routing_key: String,
     ) -> Result<Self> {
-        let exchange = format!(
+        let exchange = suffix.format(format!(
             "{}{}.{}.messages",
             network,
             match startup_type {
@@ -249,8 +249,8 @@ impl QueueType {
                 StartupType::All => ".startup-all",
             },
             confirm_level,
-        );
-        let queue = suffix.format(exchange.to_string())?;
+        ))?;
+        let queue = exchange.to_string();
 
         Ok(Self {
             props: QueueProps {
