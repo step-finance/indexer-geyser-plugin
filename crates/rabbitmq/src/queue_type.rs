@@ -161,6 +161,7 @@ impl<'a> QueueInfo<'a> {
             self.0.queue.as_ref(),
             QueueDeclareOptions {
                 auto_delete: self.0.auto_delete,
+                durable: true,
                 ..QueueDeclareOptions::default()
             },
             queue_fields,
