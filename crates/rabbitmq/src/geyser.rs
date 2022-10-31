@@ -259,7 +259,7 @@ impl QueueType {
                 exchange,
                 queue,
                 binding: Binding::Topic(routing_key),
-                prefetch: 4096,
+                prefetch: 16_384,
                 max_len_bytes: if queue_suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
                 } else {
