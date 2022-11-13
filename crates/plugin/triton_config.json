@@ -1,0 +1,33 @@
+{
+  "accounts": {
+      "owners": [],
+      "pubkeys": [],
+      "startup": false
+  },
+  "amqp": {
+      "address": "amqps://",
+      "network": "mainnet"
+  },
+  "instructions": {
+      "allTokenCalls": true,
+      "programs": []
+  },
+  "jobs": {
+      "limit": 16
+  },
+  "chainProgress": {
+    "blockMeta": true,
+    "slotStatus": true
+  },
+  "libpath": "/home/solana/libholaplex_indexer_rabbitmq_geyser.so",
+  "transactions": {
+      "programs": [
+          "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8",
+          "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
+          "5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN",
+          "CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz",
+          "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk"
+      ],
+      "pubkeys": []
+  }
+}
