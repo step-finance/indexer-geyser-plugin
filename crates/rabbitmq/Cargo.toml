@@ -36,7 +36,7 @@ base64 = "0.13.0"
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = { version = "1.0.79" }
 
-solana-transaction-status = { version = "=1.10.39" }
-solana-program = { version = "=1.10.39", optional = true }
+solana-transaction-status = { version = "=1.13.6" }
+solana-program = { version = "=1.13.6", optional = true }
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.30"
