@@ -90,7 +90,7 @@ impl<'a> QueueInfo<'a> {
                 Binding::Fanout => ExchangeKind::Fanout,
                 Binding::Direct(_) => ExchangeKind::Direct,
             },
-            ExchangeDeclareOptions::default(),
+            ExchangeDeclareOptions { durable: true, ..ExchangeDeclareOptions::default() },
             FieldTable::default(),
         )
         .await?;
