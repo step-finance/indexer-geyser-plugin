@@ -2647,8 +2647,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account-decoder"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "Inflector",
  "base64 0.13.0",
@@ -2660,7 +2660,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "solana-config-program",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-vote-program",
  "spl-token",
  "spl-token-2022",
@@ -2670,22 +2670,22 @@ dependencies = [
 
 [[package]]
 name = "solana-config-program"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "bincode",
  "chrono",
  "serde",
  "serde_derive",
  "solana-program-runtime",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
 ]
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.10.39"
+version = "1.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efde683c5a9ab4e579766f92c2861ea9d74716afe2b245762f2c03e10fd4a02c"
+checksum = "16f845c62a8aee31ad250c08345818a7b0da10ebf7e1e5fdf5f5e735b6dee766"
 dependencies = [
  "bs58",
  "bv",
@@ -2699,14 +2699,14 @@ dependencies = [
  "serde_bytes",
  "serde_derive",
  "sha2 0.10.6",
- "solana-frozen-abi-macro 1.10.39 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-frozen-abi-macro 1.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "bs58",
  "bv",
@@ -2720,15 +2720,15 @@ dependencies = [
  "serde_bytes",
  "serde_derive",
  "sha2 0.10.6",
- "solana-frozen-abi-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-frozen-abi-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.10.39"
+version = "1.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9a72cd208a4c577932f4323103227933fb8a4dd2be4732600483cf944171cc5"
+checksum = "8ebd2c533f11262885f1131e52ea6136e7c72fffb18c858ffee05964c5d2beb7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2738,8 +2738,8 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2749,19 +2749,19 @@ dependencies = [
 
 [[package]]
 name = "solana-geyser-plugin-interface"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "log",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-transaction-status",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-logger"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2770,30 +2770,30 @@ dependencies = [
 
 [[package]]
 name = "solana-measure"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "log",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
 ]
 
 [[package]]
 name = "solana-metrics"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
  "lazy_static",
  "log",
  "reqwest",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
 ]
 
 [[package]]
 name = "solana-program"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -2824,17 +2824,17 @@ dependencies = [
  "serde_derive",
  "sha2 0.10.6",
  "sha3 0.10.5",
- "solana-frozen-abi 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
- "solana-frozen-abi-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
- "solana-sdk-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-frozen-abi 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
+ "solana-frozen-abi-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
+ "solana-sdk-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "thiserror",
  "wasm-bindgen",
 ]
 
 [[package]]
 name = "solana-program-runtime"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -2847,18 +2847,18 @@ dependencies = [
  "num-traits",
  "rustc_version",
  "serde",
- "solana-frozen-abi 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
- "solana-frozen-abi-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-frozen-abi 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
+ "solana-frozen-abi-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-measure",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-sdk"
-version = "1.10.39"
+version = "1.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a8007f81cf16b86b10e6203ed0598cde5a1a2d4334b3402584c1203cc1d102e"
+checksum = "dad11e736b23ba40f3e245c2d558a2bb57e733a2c6bb6874d48f3efc6c16b435"
 dependencies = [
  "assert_matches",
  "base64 0.13.0",
@@ -2895,11 +2895,11 @@ dependencies = [
  "serde_json",
  "sha2 0.10.6",
  "sha3 0.10.5",
- "solana-frozen-abi 1.10.39 (registry+https://github.com/rust-lang/crates.io-index)",
- "solana-frozen-abi-macro 1.10.39 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-frozen-abi 1.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-frozen-abi-macro 1.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "solana-logger",
  "solana-program",
- "solana-sdk-macro 1.10.39 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sdk-macro 1.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "uriparse",
  "wasm-bindgen",
@@ -2907,8 +2907,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "assert_matches",
  "base64 0.13.0",
@@ -2945,11 +2945,11 @@ dependencies = [
  "serde_json",
  "sha2 0.10.6",
  "sha3 0.10.5",
- "solana-frozen-abi 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
- "solana-frozen-abi-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-frozen-abi 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
+ "solana-frozen-abi-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-logger",
  "solana-program",
- "solana-sdk-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "thiserror",
  "uriparse",
  "wasm-bindgen",
@@ -2957,9 +2957,9 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.10.39"
+version = "1.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89a9241b0327549f0331b46463c48226e9d76fb470fa537d98086035d894a578"
+checksum = "74ea5bf7eca00bc00e34453e11ee0f35cc15dab08c7167b5b01ef88623628246"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2970,8 +2970,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2982,8 +2982,8 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-status"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "Inflector",
  "base64 0.13.0",
@@ -2998,7 +2998,7 @@ dependencies = [
  "solana-account-decoder",
  "solana-measure",
  "solana-metrics",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-vote-program",
  "spl-associated-token-account",
  "spl-memo",
@@ -3009,8 +3009,8 @@ dependencies = [
 
 [[package]]
 name = "solana-vote-program"
-version = "1.10.39"
-source = "git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify#07ce024482d2468add7427bb995e72e465d37d99"
+version = "1.13.6"
+source = "git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin#580c68f893b71c79823905bdd4bacb7772167b4c"
 dependencies = [
  "bincode",
  "log",
@@ -3019,19 +3019,19 @@ dependencies = [
  "rustc_version",
  "serde",
  "serde_derive",
- "solana-frozen-abi 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
- "solana-frozen-abi-macro 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-frozen-abi 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
+ "solana-frozen-abi-macro 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "solana-metrics",
  "solana-program-runtime",
- "solana-sdk 1.10.39 (git+https://github.com/step-finance/solana.git?branch=SF-1765-block-notify)",
+ "solana-sdk 1.13.6 (git+https://github.com/step-finance/solana.git?branch=step-geyser-plugin)",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "1.10.39"
+version = "1.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd52beb5e9a35311b44ae34fa7dd4d344b2b3d8beae9e2297fcffad9dcbdc0e5"
+checksum = "f631034507984b0199e6e6be15d8c8bda33607b523094139b6ece91cd267c733"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -3051,7 +3051,7 @@ dependencies = [
  "serde_json",
  "sha3 0.9.1",
  "solana-program",
- "solana-sdk 1.10.39 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sdk 1.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
  "thiserror",
  "zeroize",
