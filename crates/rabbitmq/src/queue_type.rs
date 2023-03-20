@@ -90,7 +90,10 @@ impl<'a> QueueInfo<'a> {
                 Binding::Fanout => ExchangeKind::Fanout,
                 Binding::Direct(_) => ExchangeKind::Direct,
             },
-            ExchangeDeclareOptions::default(),
+            ExchangeDeclareOptions {
+                durable: true,
+                ..ExchangeDeclareOptions::default()
+            },
             FieldTable::default(),
         )
         .await?;
@@ -161,6 +164,7 @@ impl<'a> QueueInfo<'a> {
             self.0.queue.as_ref(),
             QueueDeclareOptions {
                 auto_delete: self.0.auto_delete,
+                durable: true,
                 ..QueueDeclareOptions::default()
             },
             queue_fields,

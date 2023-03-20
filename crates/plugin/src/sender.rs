@@ -59,6 +59,7 @@ impl Sender {
                 amqp.network,
                 startup_type,
                 &Suffix::ProductionUnchecked,
+                &Suffix::ProductionUnchecked,
                 CommittmentLevel::Processed,
                 "unused".to_string(),
             )?,

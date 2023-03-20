@@ -236,11 +236,12 @@ impl QueueType {
     pub fn new(
         network: Network,
         startup_type: StartupType,
-        suffix: &Suffix,
+        exchange_suffix: &Suffix,
+        queue_suffix: &Suffix,
         confirm_level: CommittmentLevel,
         routing_key: String,
     ) -> Result<Self> {
-        let exchange = format!(
+        let base_name = format!(
             "{}{}.{}.messages",
             network,
             match startup_type {
@@ -250,20 +251,21 @@ impl QueueType {
             },
             confirm_level,
         );
-        let queue = suffix.format(exchange.to_string())?;
+        let exchange = exchange_suffix.format(base_name.clone())?;
+        let queue = queue_suffix.format(base_name)?;
 
         Ok(Self {
             props: QueueProps {
                 exchange,
                 queue,
                 binding: Binding::Topic(routing_key),
-                prefetch: 4096,
-                max_len_bytes: if suffix.is_debug() || matches!(startup_type, StartupType::Normal) {
+                prefetch: 16_384,
+                max_len_bytes: if queue_suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
                 } else {
                     8 * 1024 * 1024 * 1024 // 8 GiB
                 },
-                auto_delete: suffix.is_debug(),
+                auto_delete: queue_suffix.is_debug(),
                 retry: Some(RetryProps {
                     max_tries: 3,
                     delay_hint: Duration::from_millis(500),
