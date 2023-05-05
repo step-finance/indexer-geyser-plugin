@@ -159,20 +159,6 @@ pub enum Message {
     SlotStatusNotify(SlotStatusNotify),
 }
 
-impl Message {
-    /// the routing key to use for this message type
-    #[must_use]
-    pub fn routing_key<'a, 'b>(&'a self) -> Option<&'b str> {
-        match self {
-            Message::AccountUpdate(_) => Some("sf.account"),
-            Message::InstructionNotify(_) => Some("sf.tx.instruction"),
-            Message::TransactionNotify(_) => Some("sf.tx.transaction"),
-            Message::BlockMetadataNotify(_) => Some("sf.chain.block_meta"),
-            Message::SlotStatusNotify(_) => Some("sf.chain.slot_status"),
-        }
-    }
-}
-
 /// AMQP configuration for Geyser plugins
 #[derive(Debug, Clone)]
 pub struct QueueType {

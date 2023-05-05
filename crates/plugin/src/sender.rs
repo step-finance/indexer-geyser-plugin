@@ -81,7 +81,7 @@ impl Sender {
         Ok(prod.downgrade())
     }
 
-    pub async fn send(&self, msg: Message) {
+    pub async fn send(&self, msg: Message, route: &str) {
         #[inline]
         fn log_err<E: std::fmt::Debug>(counter: &'_ Counter) -> impl FnOnce(E) + '_ {
             |err| {
@@ -94,7 +94,7 @@ impl Sender {
         let prod = self.producer.read().await;
 
         if prod
-            .write(&msg, msg.routing_key())
+            .write(&msg, Some(route))
             .await
             .map_err(log_err(&metrics.errs))
             .is_ok()
@@ -109,7 +109,7 @@ impl Sender {
         };
 
         match prod
-            .write(&msg, msg.routing_key())
+            .write(&msg, Some(route))
             .await
             .map_err(log_err(&metrics.errs))
         {
