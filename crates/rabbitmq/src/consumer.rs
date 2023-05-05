@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use futures_util::StreamExt;
-use lapin::{acker::Acker, Connection};
+use lapin::{acker::Acker, types::ShortString, Connection};
 
 use crate::{serialize::deserialize, QueueType, Result};
 
@@ -25,6 +25,17 @@ impl<Q> Clone for Consumer<Q> {
             ..*self
         }
     }
+}
+
+/// Result of a read operation on a [`Consumer`]
+#[derive(Debug)]
+pub struct ReadResult<Q: QueueType> {
+    /// the message data
+    pub data: Q::Message,
+    /// the routing key the message was delivered with
+    pub routing_key: ShortString,
+    /// the acker for the message
+    pub acker: Acker,
 }
 
 impl<Q: QueueType> Consumer<Q>
@@ -54,7 +65,7 @@ where
     /// # Errors
     /// This function fails if the delivery cannot be successfully performed or
     /// the payload cannot be deserialized.
-    pub async fn read(&mut self) -> Result<Option<(Q::Message, Acker)>> {
+    pub async fn read(&mut self) -> Result<Option<ReadResult<Q>>> {
         let delivery = match self.consumer.next().await {
             Some(d) => d?,
             None => return Ok(None),
@@ -62,6 +73,10 @@ where
 
         let data = deserialize(std::io::Cursor::new(delivery.data))?;
 
-        Ok(Some((data, delivery.acker)))
+        Ok(Some(ReadResult {
+            data,
+            routing_key: delivery.routing_key,
+            acker: delivery.acker,
+        }))
     }
 }
