@@ -14,12 +14,16 @@
     "slotStatus": true
   },
   "accounts": {
-    "owners": {},
+    "owners": {
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "token"
+    },
     "pubkeys": {},
     "startup": false
   },
   "instructions": {
-    "programs": {},
+    "programs": {
+      "11111111111111111111111111111111": "system"
+    },
     "allTokenCalls":true
   },
   "transactions": {
