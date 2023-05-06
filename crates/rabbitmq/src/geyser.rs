@@ -16,7 +16,7 @@ use crate::{
 
 /// Message data for an account update
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(into = "UiAccountUpdate", from  = "UiAccountUpdate")]
+#[serde(into = "UiAccountUpdate", from = "UiAccountUpdate")]
 pub struct AccountUpdate {
     /// The account's public key
     pub key: Pubkey,
@@ -96,7 +96,7 @@ pub struct UiAccountUpdate {
 
 /// Message data for an instruction notification
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(into = "UiInstructionNotify", from  = "UiInstructionNotify")]
+#[serde(into = "UiInstructionNotify", from = "UiInstructionNotify")]
 pub struct InstructionNotify {
     /// The program this instruction was executed with
     pub program: Pubkey,
@@ -109,12 +109,17 @@ pub struct InstructionNotify {
     pub slot: u64,
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<UiInstructionNotify> for InstructionNotify {
     fn into(self) -> UiInstructionNotify {
         UiInstructionNotify {
             program: self.program.to_string(),
             data: base64::encode(self.data),
-            accounts: self.accounts.iter().map(|a| a.to_string()).collect(),
+            accounts: self
+                .accounts
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect(),
             slot: self.slot,
         }
     }
@@ -131,7 +136,7 @@ impl From<UiInstructionNotify> for InstructionNotify {
     }
 }
 
-/// json sserialized version of InstructionNotify
+/// json sserialized version of `InstructionNotify`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UiInstructionNotify {
