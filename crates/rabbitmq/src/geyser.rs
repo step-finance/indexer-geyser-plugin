@@ -16,7 +16,7 @@ use crate::{
 
 /// Message data for an account update
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(into = "UiAccountUpdate")]
+#[serde(into = "UiAccountUpdate", from  = "UiAccountUpdate")]
 pub struct AccountUpdate {
     /// The account's public key
     pub key: Pubkey,
@@ -55,8 +55,24 @@ impl Into<UiAccountUpdate> for AccountUpdate {
     }
 }
 
+impl From<UiAccountUpdate> for AccountUpdate {
+    fn from(ui: UiAccountUpdate) -> Self {
+        Self {
+            key: ui.key.parse().unwrap(),
+            lamports: ui.lamports,
+            owner: ui.owner.parse().unwrap(),
+            executable: ui.executable,
+            rent_epoch: ui.rent_epoch,
+            data: base64::decode(ui.data).unwrap(),
+            write_version: ui.write_version,
+            slot: ui.slot,
+            is_startup: ui.is_startup,
+        }
+    }
+}
+
 /// json sserialized version of accountupdate
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UiAccountUpdate {
     /// The account's public key
     pub key: String,
@@ -80,7 +96,7 @@ pub struct UiAccountUpdate {
 
 /// Message data for an instruction notification
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(into = "UiInstructionNotify", from  = "UiInstructionNotify")]
 pub struct InstructionNotify {
     /// The program this instruction was executed with
     pub program: Pubkey,
@@ -88,6 +104,43 @@ pub struct InstructionNotify {
     pub data: Vec<u8>,
     /// The account inputs to this instruction
     pub accounts: Vec<Pubkey>,
+    /// The slot in which the transaction including this instruction was
+    /// reported
+    pub slot: u64,
+}
+
+impl Into<UiInstructionNotify> for InstructionNotify {
+    fn into(self) -> UiInstructionNotify {
+        UiInstructionNotify {
+            program: self.program.to_string(),
+            data: base64::encode(self.data),
+            accounts: self.accounts.iter().map(|a| a.to_string()).collect(),
+            slot: self.slot,
+        }
+    }
+}
+
+impl From<UiInstructionNotify> for InstructionNotify {
+    fn from(ui: UiInstructionNotify) -> Self {
+        Self {
+            program: ui.program.parse().unwrap(),
+            data: base64::decode(ui.data).unwrap(),
+            accounts: ui.accounts.iter().map(|a| a.parse().unwrap()).collect(),
+            slot: ui.slot,
+        }
+    }
+}
+
+/// json sserialized version of InstructionNotify
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UiInstructionNotify {
+    /// The program this instruction was executed with
+    pub program: String,
+    /// The binary instruction opcode
+    pub data: String,
+    /// The account inputs to this instruction
+    pub accounts: Vec<String>,
     /// The slot in which the transaction including this instruction was
     /// reported
     pub slot: u64,
