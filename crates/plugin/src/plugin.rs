@@ -11,8 +11,8 @@ use solana_geyser_plugin_interface::geyser_plugin_interface::{
 };
 use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
-pub(crate) static TOKEN_KEY: Pubkey =
-    solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+// pub(crate) static TOKEN_KEY: Pubkey =
+//     solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
 use serde::Deserialize;
 use solana_transaction_status::{
@@ -122,6 +122,8 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
     fn on_load(&mut self, cfg: &str) -> Result<()> {
         solana_logger::setup_with_default("info");
 
+        info!("Plugin loading");
+
         let metrics = Metrics::new_rc();
 
         let version;
@@ -215,6 +217,8 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             chain_progress,
         }));
 
+        info!("Plugin loaded");
+
         Ok(())
     }
 
@@ -227,46 +231,48 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         self.with_inner(
             || GeyserPluginError::AccountsUpdateError { msg: UNINIT.into() },
             |this| {
-                // this.metrics.recvs.log(1);
-
                 match account {
                     ReplicaAccountInfoVersions::V0_0_1(acct) => {
-                        if !this.acct_sel.is_selected(acct, is_startup) {
-                            return Ok(());
-                        }
-
-                        let ReplicaAccountInfo {
-                            pubkey,
-                            lamports,
-                            owner,
-                            executable,
-                            rent_epoch,
-                            data,
-                            write_version,
-                        } = *acct;
-
-                        let key = Pubkey::new_from_array(pubkey.try_into()?);
-                        let owner = Pubkey::new_from_array(owner.try_into()?);
-                        let data = data.to_owned();
-
-                        this.spawn(|this| async move {
-                            this.producer
-                                .send(Message::AccountUpdate(AccountUpdate {
-                                    key,
+                        match this.acct_sel.get_route(acct, is_startup) {
+                            None => (),
+                            Some(route) => {
+                                let ReplicaAccountInfo {
+                                    pubkey,
                                     lamports,
                                     owner,
                                     executable,
                                     rent_epoch,
                                     data,
                                     write_version,
-                                    slot,
-                                    is_startup,
-                                }))
-                                .await;
-                            this.metrics.sends.log(1);
+                                } = *acct;
 
-                            Ok(())
-                        });
+                                let key = Pubkey::new_from_array(pubkey.try_into()?);
+                                let owner = Pubkey::new_from_array(owner.try_into()?);
+                                let data = data.to_owned();
+                                let route = route.clone();
+
+                                this.spawn(|this| async move {
+                                    this.producer
+                                        .send(
+                                            Message::AccountUpdate(AccountUpdate {
+                                                key,
+                                                lamports,
+                                                owner,
+                                                executable,
+                                                rent_epoch,
+                                                data,
+                                                write_version,
+                                                slot,
+                                                is_startup,
+                                            }),
+                                            route.as_str(),
+                                        )
+                                        .await;
+                                    this.metrics.sends.log(1);
+                                    Ok(())
+                                });
+                            },
+                        }
                     },
                 };
 
@@ -282,69 +288,75 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         slot: u64,
     ) -> Result<()> {
         #[inline]
-        fn process_instruction(
-            sel: &InstructionSelector,
+        fn process_instruction<'a>(
+            sel: &'a InstructionSelector,
             ins: &CompiledInstruction,
             keys: &AccountKeys,
             slot: u64,
-        ) -> anyhow::Result<Option<Message>> {
+        ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
             let program = *keys
                 .get(ins.program_id_index as usize)
                 .ok_or_else(|| anyhow!("Couldn't get program ID for instruction"))?;
 
-            if !sel.is_selected(&program, ins) {
-                return Ok(None);
+            match sel.get_route(&program, ins) {
+                None => Ok(None),
+                Some(route) => {
+                    let accounts = ins
+                        .accounts
+                        .iter()
+                        .map(|i| {
+                            keys.get(*i as usize).map_or_else(
+                                || Err(anyhow!("Couldn't get input account for instruction")),
+                                |k| Ok(*k),
+                            )
+                        })
+                        .collect::<StdResult<Vec<_>, _>>()?;
+
+                    let data = ins.data.clone();
+
+                    Ok(Some((
+                        Message::InstructionNotify(InstructionNotify {
+                            program,
+                            data,
+                            accounts,
+                            slot,
+                        }),
+                        route,
+                    )))
+                },
             }
-
-            let accounts = ins
-                .accounts
-                .iter()
-                .map(|i| {
-                    keys.get(*i as usize).map_or_else(
-                        || Err(anyhow!("Couldn't get input account for instruction")),
-                        |k| Ok(*k),
-                    )
-                })
-                .collect::<StdResult<Vec<_>, _>>()?;
-
-            let data = ins.data.clone();
-
-            Ok(Some(Message::InstructionNotify(InstructionNotify {
-                program,
-                data,
-                accounts,
-                slot,
-            })))
         }
 
         #[inline]
-        fn process_transaction(
-            sel: &TransactionSelector,
+        fn process_transaction<'a>(
+            sel: &'a TransactionSelector,
             tx: &ReplicaTransactionInfo,
             slot: u64,
-        ) -> anyhow::Result<Option<Message>> {
-            if !sel.is_selected(tx)? {
-                return Ok(None);
-            }
+        ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
+            match sel.get_route(tx) {
+                None => Ok(None),
+                Some(route) => {
+                    //make it pretty
+                    let full_tx = ConfirmedTransactionWithStatusMeta {
+                        tx_with_meta: TransactionWithStatusMeta::Complete(
+                            VersionedTransactionWithStatusMeta {
+                                meta: tx.transaction_status_meta.clone(),
+                                transaction: tx.transaction.to_versioned_transaction(),
+                            },
+                        ),
+                        slot,
+                        block_time: None,
+                    };
+                    let encoded_tx = full_tx.encode(UiTransactionEncoding::JsonParsed, Some(0))?;
 
-            //make it pretty
-            let full_tx = ConfirmedTransactionWithStatusMeta {
-                tx_with_meta: TransactionWithStatusMeta::Complete(
-                    VersionedTransactionWithStatusMeta {
-                        meta: tx.transaction_status_meta.clone(),
-                        transaction: tx.transaction.to_versioned_transaction(),
-                    },
-                ),
-                slot,
-                block_time: None,
-            };
-            let encoded_tx = full_tx.encode(UiTransactionEncoding::JsonParsed, Some(0))?;
-
-            Ok(Some(Message::TransactionNotify(Box::new(
-                TransactionNotify {
-                    transaction: encoded_tx,
+                    Ok(Some((
+                        Message::TransactionNotify(Box::new(TransactionNotify {
+                            transaction: encoded_tx,
+                        })),
+                        route,
+                    )))
                 },
-            ))))
+            }
         }
 
         self.with_inner(
@@ -363,37 +375,13 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         }
 
                         //handle tx match
-                        match process_transaction(&this.tx_sel, tx, slot) {
-                            Ok(Some(m)) => {
-                                this.spawn(|this| async move {
-                                    this.producer.send(m).await;
-                                    this.metrics.sends.log(1);
-
-                                    Ok(())
-                                });
-                            },
-                            Ok(None) => (),
-                            Err(e) => {
-                                warn!("Error processing transaction: {:?}", e);
-                                this.metrics.errs.log(1);
-                            },
-                        }
-
-                        //handle ix matches
-                        let msg = tx.transaction.message();
-                        let keys = msg.account_keys();
-
-                        for ins in msg.instructions().iter().chain(
-                            tx.transaction_status_meta
-                                .inner_instructions
-                                .iter()
-                                .flatten()
-                                .flat_map(|i| i.instructions.iter()),
-                        ) {
-                            match process_instruction(&this.ins_sel, ins, &keys, slot) {
+                        if !this.tx_sel.is_empty() {
+                            match process_transaction(&this.tx_sel, tx, slot) {
                                 Ok(Some(m)) => {
+                                    let message = m.0;
+                                    let route = m.1.clone();
                                     this.spawn(|this| async move {
-                                        this.producer.send(m).await;
+                                        this.producer.send(message, route.as_str()).await;
                                         this.metrics.sends.log(1);
 
                                         Ok(())
@@ -401,9 +389,45 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                                 },
                                 Ok(None) => (),
                                 Err(e) => {
-                                    warn!("Error processing instruction: {:?}", e);
+                                    warn!("Error processing transaction: {:?}", e);
                                     this.metrics.errs.log(1);
                                 },
+                            }
+                        }
+
+                        //handle ix matches
+                        if !this.ins_sel.is_empty() {
+                            let msg = tx.transaction.message();
+                            let keys = msg.account_keys();
+
+                            //first check if any of the keys are in the instruction selector
+                            //this prevents blowing out the instruction list when not needed
+                            if keys.iter().any(|a| this.ins_sel.programs.contains_key(a)) {
+                                for ins in msg.instructions().iter().chain(
+                                    tx.transaction_status_meta
+                                        .inner_instructions
+                                        .iter()
+                                        .flatten()
+                                        .flat_map(|i| i.instructions.iter()),
+                                ) {
+                                    match process_instruction(&this.ins_sel, ins, &keys, slot) {
+                                        Ok(Some(m)) => {
+                                            let message = m.0;
+                                            let route = m.1.clone();
+                                            this.spawn(|this| async move {
+                                                this.producer.send(message, route.as_str()).await;
+                                                this.metrics.sends.log(1);
+
+                                                Ok(())
+                                            });
+                                        },
+                                        Ok(None) => (),
+                                        Err(e) => {
+                                            warn!("Error processing instruction: {:?}", e);
+                                            this.metrics.errs.log(1);
+                                        },
+                                    }
+                                }
                             }
                         }
                     },
@@ -438,7 +462,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                     },
                 });
                 this.spawn(|this| async move {
-                    this.producer.send(msg).await;
+                    this.producer.send(msg, "multi.chain.slot_status").await;
                     this.metrics.sends.log(1);
 
                     Ok(())
@@ -466,7 +490,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_height: bi.block_height.unwrap_or_default(),
                         });
                         this.spawn(|this| async move {
-                            this.producer.send(msg).await;
+                            this.producer.send(msg, "multi.chain.block_meta").await;
                             this.metrics.sends.log(1);
 
                             Ok(())

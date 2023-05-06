@@ -34,6 +34,7 @@ tokio-executor-trait = "2.1.0"
 tokio-reactor-trait = "1.1.0"
 itertools = "0.10.4"
 thiserror = "1.0.30"
+veil = "0.1.6"
 
 solana-geyser-plugin-interface = "=1.13.6"
 solana-logger = "=1.13.6"

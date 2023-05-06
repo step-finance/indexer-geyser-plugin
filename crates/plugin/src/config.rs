@@ -1,5 +1,6 @@
-use hashbrown::HashSet;
+use hashbrown::HashMap;
 use serde::Deserialize;
+use veil::Redact;
 
 use crate::{
     prelude::*,
@@ -28,9 +29,10 @@ pub struct Config {
 }
 
 #[serde_with::serde_as]
-#[derive(Debug, Deserialize)]
+#[derive(Redact, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Amqp {
+    #[redact(partial)]
     pub address: String,
 
     #[serde_as(as = "serde_with::DisplayFromStr")]
@@ -63,10 +65,10 @@ pub struct ChainProgress {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Accounts {
     #[serde(default)]
-    pub owners: HashSet<String>,
+    pub owners: HashMap<String, String>,
 
     #[serde(default)]
-    pub pubkeys: HashSet<String>,
+    pub pubkeys: HashMap<String, String>,
 
     /// Filter for changing how to interpret the `is_startup` flag.
     ///
@@ -88,7 +90,7 @@ pub struct Accounts {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Instructions {
     #[serde(default)]
-    pub programs: HashSet<String>,
+    pub programs: HashMap<String, String>,
 
     /// Set to true to disable heuristics to reduce the number of incoming
     /// token instructions.  Has no effect if the spl-token pubkey is not in the
@@ -103,9 +105,9 @@ pub struct Instructions {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Transactions {
     #[serde(default)]
-    pub programs: HashSet<String>,
+    pub programs: HashMap<String, String>,
     #[serde(default)]
-    pub pubkeys: HashSet<String>,
+    pub pubkeys: HashMap<String, String>,
 }
 
 impl Config {
