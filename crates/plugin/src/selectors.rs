@@ -1,4 +1,6 @@
-use hashbrown::HashSet;
+use std::sync::Arc;
+
+use hashbrown::{HashMap, HashSet};
 use indexer_rabbitmq::geyser::StartupType;
 use itertools::Itertools;
 use solana_geyser_plugin_interface::geyser_plugin_interface::ReplicaTransactionInfo;
@@ -7,15 +9,16 @@ use solana_program::instruction::CompiledInstruction;
 use crate::{
     config::{Accounts, Instructions, Transactions},
     interface::ReplicaAccountInfo,
-    plugin::TOKEN_KEY,
+    // plugin::TOKEN_KEY,
     prelude::*,
 };
 
 #[derive(Debug)]
 pub struct AccountSelector {
-    owners: HashSet<[u8; 32]>,
-    pubkeys: HashSet<[u8; 32]>,
+    owners: HashMap<[u8; 32], Arc<String>>,
+    pubkeys: HashMap<[u8; 32], Arc<String>>,
     startup: Option<bool>,
+    multi_routing_key: Arc<String>,
     token_addresses: Option<HashSet<Pubkey>>,
 }
 
@@ -30,13 +33,21 @@ impl AccountSelector {
 
         let owners = owners
             .into_iter()
-            .map(|s| s.parse().map(Pubkey::to_bytes))
+            .map(|s| {
+                s.0.parse()
+                    .map(Pubkey::to_bytes)
+                    .map(|a| (a, Arc::new(format!("{}.account", s.1))))
+            })
             .collect::<Result<_, _>>()
             .context("Failed to parse account owner keys")?;
 
         let pubkeys = pubkeys
             .into_iter()
-            .map(|s| s.parse().map(Pubkey::to_bytes))
+            .map(|s| {
+                s.0.parse()
+                    .map(Pubkey::to_bytes)
+                    .map(|a| (a, Arc::new(format!("{}.account", s.1))))
+            })
             .collect::<Result<_, _>>()
             .context("Failed to parse account pubkeys")?;
 
@@ -44,6 +55,7 @@ impl AccountSelector {
             owners,
             pubkeys,
             startup,
+            multi_routing_key: Arc::new("multi.account".to_string()),
             token_addresses: if all_tokens {
                 None
             } else {
@@ -75,18 +87,34 @@ impl AccountSelector {
     }
 
     #[inline]
-    pub fn is_selected(&self, acct: &ReplicaAccountInfo, is_startup: bool) -> bool {
+    pub fn get_route<'a>(
+        &'a self,
+        acct: &ReplicaAccountInfo,
+        is_startup: bool,
+    ) -> Option<&Arc<String>> {
         let ReplicaAccountInfo {
-            owner, /*data,*/ ..
+            owner,
+            pubkey, /*data,*/
+            ..
         } = *acct;
 
-        if self.startup.map_or(false, |s| is_startup != s)
-            || !(self.owners.contains(owner) || self.pubkeys.contains(acct.pubkey))
-        {
-            return false;
+        if !self.startup.unwrap_or(false) && is_startup {
+            return None;
         }
 
-        // commented out for step, we'll never use this
+        match (self.owners.get(owner), self.pubkeys.get(pubkey)) {
+            (Some(route), None) | (None, Some(route)) => Some(route),
+            (Some(route1), Some(route2)) => {
+                if route1 == route2 {
+                    Some(route1)
+                } else {
+                    Some(&self.multi_routing_key)
+                }
+            },
+            _ => None,
+        }
+
+        // commented out for step, we'll _probably_ never use this
 
         // if owner == TOKEN_KEY.as_ref() && data.len() == TokenAccount::get_packed_len() {
         //     if let Some(ref addrs) = self.token_addresses {
@@ -99,33 +127,35 @@ impl AccountSelector {
         //         }
         //     }
         // }
-
-        true
     }
 }
 
 #[derive(Debug)]
 pub struct InstructionSelector {
-    programs: HashSet<Pubkey>,
-    screen_tokens: bool,
+    pub programs: HashMap<Pubkey, Arc<String>>,
+    // screen_tokens: bool,
 }
 
 impl InstructionSelector {
     pub fn from_config(config: Instructions) -> Result<Self> {
         let Instructions {
             programs,
-            all_token_calls,
+            ..
+            // all_token_calls,
         } = config;
 
         let programs = programs
             .into_iter()
-            .map(|s| s.parse())
+            .map(|s| {
+                s.0.parse()
+                    .map(|a| (a, Arc::new(format!("{}.instruction", s.1))))
+            })
             .collect::<Result<_, _>>()
             .context("Failed to parse instruction program keys")?;
 
         Ok(Self {
             programs,
-            screen_tokens: !all_token_calls,
+            // screen_tokens: !all_token_calls,
         })
     }
 
@@ -135,36 +165,37 @@ impl InstructionSelector {
     }
 
     #[inline]
-    pub fn is_selected(&self, pgm: &Pubkey, ins: &CompiledInstruction) -> bool {
-        if !self.programs.contains(pgm) {
-            return false;
-        }
+    pub fn get_route<'a>(
+        &'a self,
+        pgm: &Pubkey,
+        _ins: &CompiledInstruction,
+    ) -> Option<&Arc<String>> {
+        self.programs.get(pgm)
 
-        if self.screen_tokens && *pgm == TOKEN_KEY {
-            if let [8, rest @ ..] = ins.data.as_slice() {
-                let amt = rest.try_into().map(u64::from_le_bytes);
+        // if self.screen_tokens && *pgm == TOKEN_KEY {
+        //     if let [8, rest @ ..] = ins.data.as_slice() {
+        //         let amt = rest.try_into().map(u64::from_le_bytes);
 
-                if !matches!(amt, Ok(1)) {
-                    return false;
-                }
+        //         if !matches!(amt, Ok(1)) {
+        //             return false;
+        //         }
 
-                debug_assert_eq!(
-                    ins.data,
-                    spl_token::instruction::TokenInstruction::Burn { amount: 1_u64 }.pack(),
-                );
-            } else {
-                return false;
-            }
-        }
-
-        true
+        //         debug_assert_eq!(
+        //             ins.data,
+        //             spl_token::instruction::TokenInstruction::Burn { amount: 1_u64 }.pack(),
+        //         );
+        //     } else {
+        //         return false;
+        //     }
+        // }
     }
 }
 
 #[derive(Debug)]
 pub struct TransactionSelector {
-    programs: HashSet<Pubkey>,
-    pubkeys: HashSet<Pubkey>,
+    programs: HashMap<Pubkey, Arc<String>>,
+    pubkeys: HashMap<Pubkey, Arc<String>>,
+    multi_routing_key: Arc<String>,
 }
 
 impl TransactionSelector {
@@ -173,17 +204,27 @@ impl TransactionSelector {
 
         let programs = programs
             .into_iter()
-            .map(|s| s.parse())
+            .map(|s| {
+                s.0.parse()
+                    .map(|a| (a, Arc::new(format!("{}.transaction", s.1))))
+            })
             .collect::<Result<_, _>>()
-            .context("Failed to parse instruction program keys")?;
+            .context("Failed to parse tx program keys")?;
 
         let pubkeys = pubkeys
             .into_iter()
-            .map(|s| s.parse())
+            .map(|s| {
+                s.0.parse()
+                    .map(|a| (a, Arc::new(format!("{}.transaction", s.1))))
+            })
             .collect::<Result<_, _>>()
-            .context("Failed to parse instruction pubkeys")?;
+            .context("Failed to parse tx pubkeys")?;
 
-        Ok(Self { programs, pubkeys })
+        Ok(Self {
+            programs,
+            pubkeys,
+            multi_routing_key: Arc::new("multi.transaction".to_string()),
+        })
     }
 
     #[inline]
@@ -192,55 +233,45 @@ impl TransactionSelector {
     }
 
     #[inline]
-    pub fn is_selected(&self, tx: &ReplicaTransactionInfo) -> anyhow::Result<bool> {
+    pub fn get_route<'a>(&'a self, tx: &ReplicaTransactionInfo) -> Option<&Arc<String>> {
         let msg = tx.transaction.message();
         let keys = msg.account_keys();
 
-        if !self.programs.is_empty() {
-            //check root program ixs
-            if let Some(r) = msg
-                .instructions()
-                .iter()
-                .map(|a| a.program_id_index.into())
-                .unique()
-                .map(|a| {
-                    keys.get(a)
-                        .ok_or_else(|| anyhow!("pgm index {} invalid", a))
-                })
-                .find(|a| match a {
-                    Err(_) => true,
-                    Ok(pubkey) => self.programs.contains(pubkey),
-                })
-            {
-                return r.map(|_| true);
-            }
+        let pubkey_routes = keys
+            .iter()
+            .filter_map(|a| self.pubkeys.get(a))
+            .unique()
+            .collect::<Vec<_>>();
+        if pubkey_routes.len() > 1 {
+            return Some(&self.multi_routing_key);
+        }
 
-            //check inner program ixs
-            let inner = &tx.transaction_status_meta.inner_instructions;
-            if let Some(ixs) = inner {
-                if let Some(r) = ixs
+        //check programs
+        let program_routes = msg
+            .instructions()
+            .iter()
+            .chain(
+                tx.transaction_status_meta
+                    .inner_instructions
                     .iter()
-                    .flat_map(|a| &a.instructions)
-                    .map(|a| a.program_id_index.into())
-                    .unique()
-                    .map(|a| {
-                        keys.get(a)
-                            .ok_or_else(|| anyhow!("pgm index {} invalid", a))
-                    })
-                    .find(|a| match a {
-                        Err(_) => true,
-                        Ok(pubkey) => self.programs.contains(pubkey),
-                    })
-                {
-                    return r.map(|_| true);
-                }
-            }
-        }
+                    .flatten()
+                    .flat_map(|ii| ii.instructions.iter()),
+            )
+            .map(|a| a.program_id_index.into())
+            .unique()
+            .filter_map(|a| keys.get(a))
+            .filter_map(|a| self.programs.get(a))
+            .unique()
+            .take(2); //if > 1 then we use multi anyhow
 
-        if !self.pubkeys.is_empty() && keys.iter().unique().any(|a| self.pubkeys.contains(a)) {
-            return Ok(true);
+        let mut routes = pubkey_routes.into_iter().chain(program_routes).unique();
+        let first = routes.next();
+        first?;
+        let second = routes.next();
+        if second.is_none() {
+            first
+        } else {
+            Some(&self.multi_routing_key)
         }
-
-        Ok(false)
     }
 }

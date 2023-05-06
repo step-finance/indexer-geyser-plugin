@@ -102,7 +102,7 @@ pub struct TransactionNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BlockMetadataNotify {
     /// the slot of the block
@@ -144,7 +144,7 @@ pub enum SlotStatus {
 }
 
 /// A message transmitted by a Geyser plugin
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum Message {
     /// Indicates an account should be updated
@@ -157,20 +157,6 @@ pub enum Message {
     BlockMetadataNotify(BlockMetadataNotify),
     /// indeicates the status of a slot has changed
     SlotStatusNotify(SlotStatusNotify),
-}
-
-impl Message {
-    /// the routing key to use for this message type
-    #[must_use]
-    pub fn routing_key<'a, 'b>(&'a self) -> Option<&'b str> {
-        match self {
-            Message::AccountUpdate(_) => Some("sf.account"),
-            Message::InstructionNotify(_) => Some("sf.tx.instruction"),
-            Message::TransactionNotify(_) => Some("sf.tx.transaction"),
-            Message::BlockMetadataNotify(_) => Some("sf.chain.block_meta"),
-            Message::SlotStatusNotify(_) => Some("sf.chain.slot_status"),
-        }
-    }
 }
 
 /// AMQP configuration for Geyser plugins
