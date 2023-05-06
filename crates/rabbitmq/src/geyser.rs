@@ -102,7 +102,7 @@ pub struct TransactionNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BlockMetadataNotify {
     /// the slot of the block
@@ -144,7 +144,7 @@ pub enum SlotStatus {
 }
 
 /// A message transmitted by a Geyser plugin
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum Message {
     /// Indicates an account should be updated
