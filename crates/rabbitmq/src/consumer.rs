@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use futures_util::StreamExt;
-use lapin::{acker::Acker, types::ShortString, Connection};
+use lapin::{acker::Acker, Connection};
 
 use crate::{serialize::deserialize, QueueType, Result};
 
@@ -33,7 +33,7 @@ pub struct ReadResult<Q: QueueType> {
     /// the message data
     pub data: Q::Message,
     /// the routing key the message was delivered with
-    pub routing_key: ShortString,
+    pub routing_key: String,
     /// the acker for the message
     pub acker: Acker,
 }
@@ -75,7 +75,7 @@ where
 
         Ok(Some(ReadResult {
             data,
-            routing_key: delivery.routing_key,
+            routing_key: delivery.routing_key.to_string(),
             acker: delivery.acker,
         }))
     }
