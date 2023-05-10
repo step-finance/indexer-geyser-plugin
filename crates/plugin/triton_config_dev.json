@@ -1,0 +1,47 @@
+{
+  "accounts": {
+      "owners": {},
+      "pubkeys": {},
+      "startup": false
+  },
+  "amqp": {
+      "address": "amqps://",
+      "network": "mainnet"
+  },
+  "instructions": {
+      "allTokenCalls": true,
+      "programs": {
+        "srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX": "defi",
+        "BfxZj7ckfRGHxByn7aHgH2puyXhfjAUvULtRjJo4rd8X": "defi",
+        "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY": "defi",
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": "defi"
+    }
+  },
+  "jobs": {
+      "limit": 16
+  },
+  "chainProgress": {
+    "blockMeta": true,
+    "slotStatus": true
+  },
+  "libpath": "/home/solana/libholaplex_indexer_rabbitmq_geyser.so",
+  "transactions": {
+      "programs": {
+          "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8": "sf",
+          "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K": "sf",
+          "5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN": "sf",
+          "CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz": "sf",
+          "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk": "sf",
+          "hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu": "sf",
+          "HYPERfwdTjyJ2SCaKHmpF2MtrXqWxrsotYDsTrshHWq8": "sf",
+          "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN": "sf",
+          "mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc": "sf",
+
+          "srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX": "defi",
+          "BfxZj7ckfRGHxByn7aHgH2puyXhfjAUvULtRjJo4rd8X": "defi",
+          "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY": "defi",
+          "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": "defi"
+      },
+      "pubkeys": {}
+  }
+}
