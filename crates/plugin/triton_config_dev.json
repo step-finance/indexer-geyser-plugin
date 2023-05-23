@@ -10,12 +10,7 @@
   },
   "instructions": {
       "allTokenCalls": true,
-      "programs": {
-        "srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX": "defi",
-        "BfxZj7ckfRGHxByn7aHgH2puyXhfjAUvULtRjJo4rd8X": "defi",
-        "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY": "defi",
-        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": "defi"
-    }
+      "programs": {}
   },
   "jobs": {
       "limit": 16
