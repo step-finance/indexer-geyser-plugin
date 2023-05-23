@@ -3,25 +3,27 @@ use std::{env, sync::Arc};
 use anyhow::Context;
 use hashbrown::HashSet;
 use indexer_rabbitmq::geyser::{
-    AccountUpdate, BlockMetadataNotify, InstructionNotify, Message, SlotStatusNotify,
-    TransactionNotify,
+    BlockMetadataNotify, InstructionNotify, Message, SlotStatusNotify, TransactionNotify,
 };
 use solana_geyser_plugin_interface::geyser_plugin_interface::{
-    ReplicaBlockInfoVersions, ReplicaTransactionInfo, SlotStatus,
+    ReplicaAccountInfoV2, ReplicaBlockInfoVersions, SlotStatus,
 };
 use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
 // pub(crate) static TOKEN_KEY: Pubkey =
 //     solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
+use solana_sdk::transaction::SanitizedTransaction;
+
 use serde::Deserialize;
 use solana_transaction_status::{
-    ConfirmedTransactionWithStatusMeta, TransactionWithStatusMeta, UiTransactionEncoding,
-    VersionedTransactionWithStatusMeta,
+    ConfirmedTransactionWithStatusMeta, TransactionStatusMeta, TransactionWithStatusMeta,
+    UiTransactionEncoding, VersionedTransactionWithStatusMeta,
 };
 
 use crate::{
     config::{ChainProgress, Config},
+    convert,
     interface::{
         GeyserPlugin, GeyserPluginError, ReplicaAccountInfo, ReplicaAccountInfoVersions,
         ReplicaTransactionInfoVersions, Result,
@@ -35,6 +37,7 @@ use crate::{
 const UNINIT: &str = "RabbitMQ plugin not initialized yet!";
 
 #[inline]
+#[allow(clippy::needless_lifetimes)]
 fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
     counter: &'a Counter,
 ) -> impl FnOnce(E) -> GeyserPluginError + 'a {
@@ -138,10 +141,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             {
                 use std::fmt::Write;
 
-                let mut s = format!("v{}", ver);
+                let mut s = format!("v{ver}");
 
                 if let Some(git) = git {
-                    write!(s, "+git.{}", git).unwrap();
+                    write!(s, "+git.{git}").unwrap();
                 }
 
                 version = s;
@@ -189,7 +192,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         let producer = rt.block_on(async {
             let producer = Sender::new(
                 amqp,
-                format!("geyser-rabbitmq-{}@{}", version, host),
+                format!("geyser-rabbitmq-{version}@{host}"),
                 startup_type,
                 Arc::clone(&metrics),
             )
@@ -231,50 +234,28 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         self.with_inner(
             || GeyserPluginError::AccountsUpdateError { msg: UNINIT.into() },
             |this| {
-                match account {
+                let (pubkey, owner) = match account {
                     ReplicaAccountInfoVersions::V0_0_1(acct) => {
-                        match this.acct_sel.get_route(acct, is_startup) {
-                            None => (),
-                            Some(route) => {
-                                let ReplicaAccountInfo {
-                                    pubkey,
-                                    lamports,
-                                    owner,
-                                    executable,
-                                    rent_epoch,
-                                    data,
-                                    write_version,
-                                } = *acct;
-
-                                let key = Pubkey::new_from_array(pubkey.try_into()?);
-                                let owner = Pubkey::new_from_array(owner.try_into()?);
-                                let data = data.to_owned();
-                                let route = route.clone();
-
-                                this.spawn(|this| async move {
-                                    this.producer
-                                        .send(
-                                            Message::AccountUpdate(AccountUpdate {
-                                                key,
-                                                lamports,
-                                                owner,
-                                                executable,
-                                                rent_epoch,
-                                                data,
-                                                write_version,
-                                                slot,
-                                                is_startup,
-                                            }),
-                                            route.as_str(),
-                                        )
-                                        .await;
-                                    this.metrics.sends.log(1);
-                                    Ok(())
-                                });
-                            },
-                        }
+                        let ReplicaAccountInfo { pubkey, owner, .. } = *acct;
+                        (pubkey, owner)
+                    },
+                    ReplicaAccountInfoVersions::V0_0_2(acct) => {
+                        let ReplicaAccountInfoV2 { pubkey, owner, .. } = *acct;
+                        (pubkey, owner)
                     },
                 };
+
+                if let Some(route) = this.acct_sel.get_route(owner, pubkey, is_startup) {
+                    let acct = convert::create_account_update(&account, slot, is_startup);
+                    let route = route.clone();
+                    this.spawn(|this| async move {
+                        this.producer
+                            .send(Message::AccountUpdate(acct), route.as_str())
+                            .await;
+                        this.metrics.sends.log(1);
+                        Ok(())
+                    });
+                }
 
                 Ok(())
             },
@@ -330,18 +311,19 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         #[inline]
         fn process_transaction<'a>(
             sel: &'a TransactionSelector,
-            tx: &ReplicaTransactionInfo,
+            stx: &SanitizedTransaction,
+            meta: &TransactionStatusMeta,
             slot: u64,
         ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
-            match sel.get_route(tx) {
+            match sel.get_route(stx, meta) {
                 None => Ok(None),
                 Some(route) => {
                     //make it pretty
                     let full_tx = ConfirmedTransactionWithStatusMeta {
                         tx_with_meta: TransactionWithStatusMeta::Complete(
                             VersionedTransactionWithStatusMeta {
-                                meta: tx.transaction_status_meta.clone(),
-                                transaction: tx.transaction.to_versioned_transaction(),
+                                meta: meta.clone(),
+                                transaction: stx.to_versioned_transaction(),
                             },
                         ),
                         slot,
@@ -368,15 +350,62 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 this.metrics.recvs.log(1);
 
+                let stx: &SanitizedTransaction;
+                let meta: &TransactionStatusMeta;
+
                 match transaction {
                     ReplicaTransactionInfoVersions::V0_0_1(tx) => {
-                        if matches!(tx.transaction_status_meta.status, Err(..)) {
+                        if matches!(tx.transaction_status_meta.status, Err(..)) || tx.is_vote {
                             return Ok(());
                         }
+                        stx = tx.transaction;
+                        meta = tx.transaction_status_meta;
+                    },
+                    ReplicaTransactionInfoVersions::V0_0_2(tx) => {
+                        if matches!(tx.transaction_status_meta.status, Err(..)) || tx.is_vote {
+                            return Ok(());
+                        }
+                        stx = tx.transaction;
+                        meta = tx.transaction_status_meta;
+                    },
+                }
 
-                        //handle tx match
-                        if !this.tx_sel.is_empty() {
-                            match process_transaction(&this.tx_sel, tx, slot) {
+                //handle tx match
+                if !this.tx_sel.is_empty() {
+                    match process_transaction(&this.tx_sel, stx, meta, slot) {
+                        Ok(Some(m)) => {
+                            let message = m.0;
+                            let route = m.1.clone();
+                            this.spawn(|this| async move {
+                                this.producer.send(message, route.as_str()).await;
+                                this.metrics.sends.log(1);
+
+                                Ok(())
+                            });
+                        },
+                        Ok(None) => (),
+                        Err(e) => {
+                            warn!("Error processing transaction: {:?}", e);
+                            this.metrics.errs.log(1);
+                        },
+                    }
+                }
+
+                //handle ix matches
+                if !this.ins_sel.is_empty() {
+                    let msg = stx.message();
+                    let keys = msg.account_keys();
+
+                    //first check if any of the keys are in the instruction selector
+                    //this prevents blowing out the instruction list when not needed
+                    if keys.iter().any(|a| this.ins_sel.programs.contains_key(a)) {
+                        for ins in msg.instructions().iter().chain(
+                            meta.inner_instructions
+                                .iter()
+                                .flatten()
+                                .flat_map(|i| i.instructions.iter()),
+                        ) {
+                            match process_instruction(&this.ins_sel, ins, &keys, slot) {
                                 Ok(Some(m)) => {
                                     let message = m.0;
                                     let route = m.1.clone();
@@ -389,48 +418,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                                 },
                                 Ok(None) => (),
                                 Err(e) => {
-                                    warn!("Error processing transaction: {:?}", e);
+                                    warn!("Error processing instruction: {:?}", e);
                                     this.metrics.errs.log(1);
                                 },
                             }
                         }
-
-                        //handle ix matches
-                        if !this.ins_sel.is_empty() {
-                            let msg = tx.transaction.message();
-                            let keys = msg.account_keys();
-
-                            //first check if any of the keys are in the instruction selector
-                            //this prevents blowing out the instruction list when not needed
-                            if keys.iter().any(|a| this.ins_sel.programs.contains_key(a)) {
-                                for ins in msg.instructions().iter().chain(
-                                    tx.transaction_status_meta
-                                        .inner_instructions
-                                        .iter()
-                                        .flatten()
-                                        .flat_map(|i| i.instructions.iter()),
-                                ) {
-                                    match process_instruction(&this.ins_sel, ins, &keys, slot) {
-                                        Ok(Some(m)) => {
-                                            let message = m.0;
-                                            let route = m.1.clone();
-                                            this.spawn(|this| async move {
-                                                this.producer.send(message, route.as_str()).await;
-                                                this.metrics.sends.log(1);
-
-                                                Ok(())
-                                            });
-                                        },
-                                        Ok(None) => (),
-                                        Err(e) => {
-                                            warn!("Error processing instruction: {:?}", e);
-                                            this.metrics.errs.log(1);
-                                        },
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    }
                 }
 
                 Ok(())

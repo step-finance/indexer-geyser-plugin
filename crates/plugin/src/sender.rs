@@ -28,7 +28,7 @@ impl Sender {
         startup_type: StartupType,
         metrics: Arc<Metrics>,
     ) -> Result<Self, indexer_rabbitmq::Error> {
-        let producer = Self::create_producer(&amqp, name.as_ref(), startup_type).await?;
+        let producer = Self::create_producer(&amqp, name.as_str(), startup_type).await?;
 
         Ok(Self {
             amqp,
@@ -76,7 +76,7 @@ impl Sender {
         std::mem::drop(prod);
         let mut prod = self.producer.write().await;
 
-        *prod = Self::create_producer(&self.amqp, self.name.as_ref(), self.startup_type).await?;
+        *prod = Self::create_producer(&self.amqp, self.name.as_str(), self.startup_type).await?;
 
         Ok(prod.downgrade())
     }
