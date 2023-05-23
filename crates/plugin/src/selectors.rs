@@ -3,12 +3,12 @@ use std::sync::Arc;
 use hashbrown::{HashMap, HashSet};
 use indexer_rabbitmq::geyser::StartupType;
 use itertools::Itertools;
-use solana_geyser_plugin_interface::geyser_plugin_interface::ReplicaTransactionInfo;
 use solana_program::instruction::CompiledInstruction;
+use solana_sdk::transaction::SanitizedTransaction;
+use solana_transaction_status::TransactionStatusMeta;
 
 use crate::{
     config::{Accounts, Instructions, Transactions},
-    interface::ReplicaAccountInfo,
     // plugin::TOKEN_KEY,
     prelude::*,
 };
@@ -87,22 +87,17 @@ impl AccountSelector {
     }
 
     #[inline]
-    pub fn get_route<'a>(
-        &'a self,
-        acct: &ReplicaAccountInfo,
+    pub fn get_route(
+        &self,
+        acct_owner: &[u8],
+        acct_pubkey: &[u8],
         is_startup: bool,
     ) -> Option<&Arc<String>> {
-        let ReplicaAccountInfo {
-            owner,
-            pubkey, /*data,*/
-            ..
-        } = *acct;
-
         if !self.startup.unwrap_or(false) && is_startup {
             return None;
         }
 
-        match (self.owners.get(owner), self.pubkeys.get(pubkey)) {
+        match (self.owners.get(acct_owner), self.pubkeys.get(acct_pubkey)) {
             (Some(route), None) | (None, Some(route)) => Some(route),
             (Some(route1), Some(route2)) => {
                 if route1 == route2 {
@@ -165,11 +160,7 @@ impl InstructionSelector {
     }
 
     #[inline]
-    pub fn get_route<'a>(
-        &'a self,
-        pgm: &Pubkey,
-        _ins: &CompiledInstruction,
-    ) -> Option<&Arc<String>> {
+    pub fn get_route(&self, pgm: &Pubkey, _ins: &CompiledInstruction) -> Option<&Arc<String>> {
         self.programs.get(pgm)
 
         // if self.screen_tokens && *pgm == TOKEN_KEY {
@@ -233,8 +224,12 @@ impl TransactionSelector {
     }
 
     #[inline]
-    pub fn get_route<'a>(&'a self, tx: &ReplicaTransactionInfo) -> Option<&Arc<String>> {
-        let msg = tx.transaction.message();
+    pub fn get_route(
+        &self,
+        tx: &SanitizedTransaction,
+        meta: &TransactionStatusMeta,
+    ) -> Option<&Arc<String>> {
+        let msg = tx.message();
         let keys = msg.account_keys();
 
         let pubkey_routes = keys
@@ -251,8 +246,7 @@ impl TransactionSelector {
             .instructions()
             .iter()
             .chain(
-                tx.transaction_status_meta
-                    .inner_instructions
+                meta.inner_instructions
                     .iter()
                     .flatten()
                     .flat_map(|ii| ii.instructions.iter()),
