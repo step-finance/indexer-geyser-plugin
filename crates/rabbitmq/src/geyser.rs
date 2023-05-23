@@ -36,6 +36,8 @@ pub struct AccountUpdate {
     pub slot: u64,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
+    /// First signature of the transaction caused this account modification
+    pub txn_signature: Option<String>,
 }
 
 #[allow(clippy::from_over_into)]
@@ -51,6 +53,7 @@ impl Into<UiAccountUpdate> for AccountUpdate {
             write_version: self.write_version,
             slot: self.slot,
             is_startup: self.is_startup,
+            txn_signature: self.txn_signature,
         }
     }
 }
@@ -67,6 +70,7 @@ impl From<UiAccountUpdate> for AccountUpdate {
             write_version: ui.write_version,
             slot: ui.slot,
             is_startup: ui.is_startup,
+            txn_signature: ui.txn_signature,
         }
     }
 }
@@ -92,6 +96,8 @@ pub struct UiAccountUpdate {
     pub slot: u64,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
+    /// First signature of the transaction caused this account modification
+    pub txn_signature: Option<String>,
 }
 
 /// Message data for an instruction notification

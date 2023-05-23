@@ -80,7 +80,7 @@ impl Suffix {
             },
             Self::Production | Self::ProductionUnchecked => (),
             Self::Staging => write!(prefix, ".staging").unwrap_or_else(|_| unreachable!()),
-            Self::Debug(s) => write!(prefix, ".debug.{}", s).unwrap_or_else(|_| unreachable!()),
+            Self::Debug(s) => write!(prefix, ".debug.{s}").unwrap_or_else(|_| unreachable!()),
         }
 
         Ok(prefix)
