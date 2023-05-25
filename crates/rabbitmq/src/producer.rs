@@ -42,6 +42,20 @@ where
         &self,
         val: impl std::borrow::Borrow<Q::Message>,
         routing_key: Option<&str>,
+    ) -> Result<()> {
+        let _ = &self.write_with_props(val, routing_key, None).await;
+        Ok(())
+    }
+
+    /// Write a single message to this producer with additional rabbit properties
+    ///
+    /// # Errors
+    /// This function fails if the value cannot be serialized or the serialized
+    /// payload cannot be transmitted.
+    pub async fn write_with_props(
+        &self,
+        val: impl std::borrow::Borrow<Q::Message>,
+        routing_key: Option<&str>,
         rabbit_props: Option<&BasicProperties>,
     ) -> Result<()> {
         let val = val.borrow();
@@ -55,7 +69,7 @@ where
 
         self.ty
             .info()
-            .publish_with_props(&self.chan, &vec, routing_key, rabbit_props)
+            .publish(&self.chan, &vec, routing_key, rabbit_props)
             .await?
             .await?;
 

@@ -127,16 +127,6 @@ impl<'a> QueueInfo<'a> {
         .await
         .map_err(Into::into)
     }
-
-    pub(crate) async fn publish_with_props(
-        self,
-        chan: &Channel,
-        data: &[u8],
-        routing: Option<&str>,
-        props: Option<&BasicProperties>,
-    ) -> Result<PublisherConfirm> {
-        self.publish(chan, data, routing, props).await
-    }
 }
 
 #[cfg(feature = "consumer")]
