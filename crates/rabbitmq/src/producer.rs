@@ -1,6 +1,6 @@
 //! An AMQP producer configured from a [`QueueType`]
 
-use lapin::{Channel, Connection};
+use lapin::{BasicProperties, Channel, Connection};
 
 use crate::{QueueType, Result};
 
@@ -42,6 +42,7 @@ where
         &self,
         val: impl std::borrow::Borrow<Q::Message>,
         routing_key: Option<&str>,
+        rabbit_props: Option<&BasicProperties>,
     ) -> Result<()> {
         let val = val.borrow();
 
@@ -54,7 +55,7 @@ where
 
         self.ty
             .info()
-            .publish(&self.chan, &vec, routing_key)
+            .publish_with_props(&self.chan, &vec, routing_key, rabbit_props)
             .await?
             .await?;
 
