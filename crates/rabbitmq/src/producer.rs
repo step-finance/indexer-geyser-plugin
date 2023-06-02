@@ -1,8 +1,8 @@
 //! An AMQP producer configured from a [`QueueType`]
 
-use lapin::{BasicProperties, Channel, Connection};
-
 use crate::{QueueType, Result};
+use lapin::{BasicProperties, Channel, Connection};
+use std::future::Future;
 
 #[cfg(feature = "produce-json")]
 use crate::serialize::json;
@@ -38,13 +38,12 @@ where
     /// # Errors
     /// This function fails if the value cannot be serialized or the serialized
     /// payload cannot be transmitted.
-    pub async fn write(
-        &self,
-        val: impl std::borrow::Borrow<Q::Message>,
-        routing_key: Option<&str>,
-    ) -> Result<()> {
-        let _ = &self.write_with_props(val, routing_key, None).await;
-        Ok(())
+    pub fn write<'a>(
+        &'a self,
+        val: &'a Q::Message,
+        routing_key: Option<&'a str>,
+    ) -> impl Future<Output = Result<()>> + 'a {
+        self.write_with_props(val, routing_key, None)
     }
 
     /// Write a single message to this producer with additional rabbit properties
@@ -56,7 +55,7 @@ where
         &self,
         val: impl std::borrow::Borrow<Q::Message>,
         routing_key: Option<&str>,
-        rabbit_props: Option<&BasicProperties>,
+        rabbit_props: Option<BasicProperties>,
     ) -> Result<()> {
         let val = val.borrow();
 

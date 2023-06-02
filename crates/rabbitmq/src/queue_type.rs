@@ -115,14 +115,14 @@ impl<'a> QueueInfo<'a> {
         chan: &Channel,
         data: &[u8],
         routing: Option<&str>,
-        props: Option<&BasicProperties>,
+        props: Option<BasicProperties>,
     ) -> Result<PublisherConfirm> {
         chan.basic_publish(
             self.0.exchange.as_ref(),
             routing.unwrap_or(""),
             BasicPublishOptions::default(),
             data,
-            props.unwrap_or(&BasicProperties::default()).clone(),
+            props.unwrap_or_default(),
         )
         .await
         .map_err(Into::into)
