@@ -551,9 +551,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.73"
+version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fff2a6927b3bb87f9595d67196a70493f627687a71d87a0d692242c33f58c11"
+checksum = "50d30906286121d95be3d479533b458f87493b30a4b5f79a607db8f5d11aa91f"
 dependencies = [
  "jobserver",
 ]
@@ -995,9 +995,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.9.1"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c90bf5f19754d10198ccb95b70664fc925bd1fc090a0fd9a6ebc54acc8cd6272"
+checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
 dependencies = [
  "atty",
  "humantime",
@@ -1315,7 +1315,7 @@ dependencies = [
 
 [[package]]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "bs58",
@@ -1341,6 +1341,7 @@ dependencies = [
  "tokio-executor-trait",
  "tokio-reactor-trait",
  "veil",
+ "zstd 0.12.3+zstd.1.5.2",
 ]
 
 [[package]]
@@ -1708,9 +1709,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memmap2"
-version = "0.5.7"
+version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95af15f345b17af2efc8ead6080fb8bc376f8cec1b35277b935637595fe77498"
+checksum = "83faa42c0a078c393f6b29d5db232d8be22776a891f8f56e5284faee4a20b327"
 dependencies = [
  "libc",
 ]
@@ -2501,9 +2502,9 @@ checksum = "e25dfac463d778e353db5be2449d1cce89bd6fd23c9f1ea21310ce6e5a1b29c4"
 
 [[package]]
 name = "serde"
-version = "1.0.145"
+version = "1.0.164"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
+checksum = "9e8c8cf938e98f769bc164923b06dce91cea1751522f46f8466461af04c9027d"
 dependencies = [
  "serde_derive",
 ]
@@ -2519,13 +2520,13 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.145"
+version = "1.0.164"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81fa1584d3d1bcacd84c277a0dfe21f5b0f6accf4a23d04d4c6d61f1af522b4c"
+checksum = "d9735b638ccc51c28bf6914d90a2e9725b377144fc612c49a611fddd1b631d68"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.102",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -2673,8 +2674,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account-decoder"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "Inflector",
  "base64 0.13.0",
@@ -2690,15 +2691,15 @@ dependencies = [
  "solana-sdk",
  "solana-vote-program",
  "spl-token",
- "spl-token-2022 0.6.0",
+ "spl-token-2022",
  "thiserror",
- "zstd",
+ "zstd 0.11.2+zstd.1.5.2",
 ]
 
 [[package]]
 name = "solana-address-lookup-table-program"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "bincode",
  "bytemuck",
@@ -2717,8 +2718,8 @@ dependencies = [
 
 [[package]]
 name = "solana-config-program"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "bincode",
  "chrono",
@@ -2730,8 +2731,8 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "ahash",
  "blake3",
@@ -2763,8 +2764,8 @@ dependencies = [
 
 [[package]]
 name = "solana-frozen-abi-macro"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2774,8 +2775,8 @@ dependencies = [
 
 [[package]]
 name = "solana-geyser-plugin-interface"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2785,8 +2786,8 @@ dependencies = [
 
 [[package]]
 name = "solana-logger"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -2795,8 +2796,8 @@ dependencies = [
 
 [[package]]
 name = "solana-measure"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "log",
  "solana-sdk",
@@ -2804,8 +2805,8 @@ dependencies = [
 
 [[package]]
 name = "solana-metrics"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -2817,8 +2818,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -2865,8 +2866,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program-runtime"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "base64 0.13.0",
  "bincode",
@@ -2891,8 +2892,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "assert_matches",
  "base64 0.13.0",
@@ -2941,8 +2942,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "bs58",
  "proc-macro2",
@@ -2953,8 +2954,8 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-status"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "Inflector",
  "base64 0.13.0",
@@ -2975,14 +2976,14 @@ dependencies = [
  "spl-associated-token-account",
  "spl-memo",
  "spl-token",
- "spl-token-2022 0.6.0",
+ "spl-token-2022",
  "thiserror",
 ]
 
 [[package]]
 name = "solana-vote-program"
-version = "1.14.17"
-source = "git+https://github.com/step-finance/solana.git?rev=6be813eb5f68d5821094cc8cb967bf3fedbdb979#6be813eb5f68d5821094cc8cb967bf3fedbdb979"
+version = "1.14.19"
+source = "git+https://github.com/step-finance/solana.git?rev=80c3c0b1db8348b7881e4705d7cc393c80a04631#80c3c0b1db8348b7881e4705d7cc393c80a04631"
 dependencies = [
  "bincode",
  "log",
@@ -3001,9 +3002,9 @@ dependencies = [
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "1.14.17"
+version = "1.14.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b28c5ec36aa1393174f7ea18c0cb809af82c10977bc5b2e1240a6b4b048b8f24"
+checksum = "b1005285a806951f7b52fd64a819f41bc90c06b07e54974acf918f2067a2ebc7"
 dependencies = [
  "aes-gcm-siv",
  "arrayref",
@@ -3047,9 +3048,9 @@ dependencies = [
 
 [[package]]
 name = "spl-associated-token-account"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbc000f0fdf1f12f99d77d398137c1751345b18c88258ce0f99b7872cf6c9bd6"
+checksum = "978dba3bcbe88d0c2c58366c254d9ea41c5f73357e72fc0bdee4d6b5fc99c8f4"
 dependencies = [
  "assert_matches",
  "borsh",
@@ -3057,7 +3058,7 @@ dependencies = [
  "num-traits",
  "solana-program",
  "spl-token",
- "spl-token-2022 0.5.0",
+ "spl-token-2022",
  "thiserror",
 ]
 
@@ -3087,27 +3088,9 @@ dependencies = [
 
 [[package]]
 name = "spl-token-2022"
-version = "0.5.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0edb869dbe159b018f17fb9bfa67118c30f232d7f54a73742bc96794dff77ed8"
-dependencies = [
- "arrayref",
- "bytemuck",
- "num-derive",
- "num-traits",
- "num_enum",
- "solana-program",
- "solana-zk-token-sdk",
- "spl-memo",
- "spl-token",
- "thiserror",
-]
-
-[[package]]
-name = "spl-token-2022"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67fcd758e8d22c5fce17315015f5ff319604d1a6e57a73c72795639dba898890"
+checksum = "0043b590232c400bad5ee9eb983ced003d15163c4c5d56b090ac6d9a57457b47"
 dependencies = [
  "arrayref",
  "bytemuck",
@@ -3788,7 +3771,16 @@ version = "0.11.2+zstd.1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20cc960326ece64f010d2d2107537f26dc589a6573a316bd5b1dba685fa5fde4"
 dependencies = [
- "zstd-safe",
+ "zstd-safe 5.0.2+zstd.1.5.2",
+]
+
+[[package]]
+name = "zstd"
+version = "0.12.3+zstd.1.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76eea132fb024e0e13fd9c2f5d5d595d8a967aa72382ac2f9d39fcc95afd0806"
+dependencies = [
+ "zstd-safe 6.0.5+zstd.1.5.4",
 ]
 
 [[package]]
@@ -3802,11 +3794,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "zstd-sys"
-version = "2.0.1+zstd.1.5.2"
+name = "zstd-safe"
+version = "6.0.5+zstd.1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fd07cbbc53846d9145dbffdf6dd09a7a0aa52be46741825f5c97bdd4f73f12b"
+checksum = "d56d9e60b4b1758206c238a10165fbcae3ca37b01744e394c463463f6529d23b"
+dependencies = [
+ "libc",
+ "zstd-sys",
+]
+
+[[package]]
+name = "zstd-sys"
+version = "2.0.8+zstd.1.5.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5556e6ee25d32df2586c098bbfa278803692a20d0ab9565e049480d52707ec8c"
 dependencies = [
  "cc",
  "libc",
+ "pkg-config",
 ]

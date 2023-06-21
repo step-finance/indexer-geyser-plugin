@@ -318,11 +318,50 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             match sel.get_route(stx, meta) {
                 None => Ok(None),
                 Some(route) => {
+                    //compress the meta
+                    let mut compressor = zstd::bulk::Compressor::new(2).unwrap();
+                    let meta = TransactionStatusMeta {
+                        status: meta.status.clone(),
+                        fee: meta.fee,
+                        pre_balances: meta.pre_balances.clone(),
+                        post_balances: meta.post_balances.clone(),
+                        pre_datum: meta
+                            .pre_datum
+                            .iter()
+                            .map(|d| {
+                                if d.is_empty() {
+                                    d.clone()
+                                } else {
+                                    compressor.compress(d).unwrap()
+                                }
+                            })
+                            .collect(),
+                        post_datum: meta
+                            .post_datum
+                            .iter()
+                            .map(|d| {
+                                if d.is_empty() {
+                                    d.clone()
+                                } else {
+                                    compressor.compress(d).unwrap()
+                                }
+                            })
+                            .collect(),
+                        inner_instructions: meta.inner_instructions.clone(),
+                        log_messages: meta.log_messages.clone(),
+                        pre_token_balances: meta.pre_token_balances.clone(),
+                        post_token_balances: meta.post_token_balances.clone(),
+                        rewards: meta.rewards.clone(),
+                        loaded_addresses: meta.loaded_addresses.clone(),
+                        return_data: meta.return_data.clone(),
+                        compute_units_consumed: meta.compute_units_consumed,
+                    };
+
                     //make it pretty
                     let full_tx = ConfirmedTransactionWithStatusMeta {
                         tx_with_meta: TransactionWithStatusMeta::Complete(
                             VersionedTransactionWithStatusMeta {
-                                meta: meta.clone(),
+                                meta,
                                 transaction: stx.to_versioned_transaction(),
                             },
                         ),

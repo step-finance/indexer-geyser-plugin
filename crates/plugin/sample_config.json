@@ -1,5 +1,5 @@
 {
-  "libpath": "../../target/debug/libholaplex_indexer_rabbitmq_geyser.so",
+  "libpath": "../../target/release/libholaplex_indexer_rabbitmq_geyser.so",
   "amqp": {
     "network": "devnet",
     "address": "amqps://dana-dev:redacted@b-6fcd6565-cf03-4163-88a9-5617d1f25149.mq.eu-north-1.amazonaws.com:5671/dana-dev"
@@ -14,22 +14,18 @@
     "slotStatus": true
   },
   "accounts": {
-    "owners": {
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "token"
-    },
+    "owners": {},
     "pubkeys": {},
     "startup": false
   },
   "instructions": {
-    "programs": {
-      "11111111111111111111111111111111": "system"
-    },
+    "programs": {},
     "allTokenCalls":true
   },
   "transactions": {
     "programs": {
-      "11111111111111111111111111111111": "system",
-      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "token"
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "defi",
+      "11111111111111111111111111111111": "defi"
     },
     "pubkeys": {}
   }
