@@ -36,9 +36,9 @@ base64 = "0.13.0"
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = { version = "1.0.79" }
 
-# solana-transaction-status = { path = "../../../solana/transaction-status", version = "=1.14.17" }
-# solana-geyser-plugin-interface = { path = "../../../solana/geyser-plugin-interface", version = "=1.14.17" }
-# solana-program = { path = "../../../solana/sdk/program", version = "=1.14.17", optional = true }
+# solana-transaction-status = { path = "../../../solana/transaction-status" }
+# solana-geyser-plugin-interface = { path = "../../../solana/geyser-plugin-interface" }
+# solana-program = { path = "../../../solana/sdk/program", optional = true }
 
 solana-transaction-status = { version = "=1.14.19" }
 solana-geyser-plugin-interface = { version = "=1.14.19" }
