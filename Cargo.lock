@@ -1295,7 +1295,7 @@ dependencies = [
 
 [[package]]
 name = "holaplex-indexer-rabbitmq"
-version = "0.4.0"
+version = "0.8.1"
 dependencies = [
  "base64 0.13.0",
  "clap",
@@ -1315,7 +1315,7 @@ dependencies = [
 
 [[package]]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "anyhow",
  "bs58",
