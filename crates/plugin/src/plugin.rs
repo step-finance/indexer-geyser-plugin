@@ -320,10 +320,8 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 Some(route) => {
                     //compress the meta
                     let mut compressor = zstd::bulk::Compressor::new(2).unwrap();
-                    let pre_datum_compressed = meta
-                        .pre_datum.as_ref()
-                        .map(|all_datums|
-                            all_datums
+                    let pre_datum_compressed = meta.pre_datum.as_ref().map(|all_datums| {
+                        all_datums
                             .iter()
                             .map(|data| {
                                 data.as_ref().map(|some_data| {
@@ -335,11 +333,9 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                                 })
                             })
                             .collect()
-                        );
-                    let post_datum_compressed = meta
-                        .post_datum.as_ref()
-                        .map(|all_datums|
-                            all_datums
+                    });
+                    let post_datum_compressed = meta.post_datum.as_ref().map(|all_datums| {
+                        all_datums
                             .iter()
                             .map(|data| {
                                 data.as_ref().map(|some_data| {
@@ -351,7 +347,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                                 })
                             })
                             .collect()
-                        );
+                    });
                     let meta = TransactionStatusMeta {
                         status: meta.status.clone(),
                         fee: meta.fee,
