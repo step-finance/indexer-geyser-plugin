@@ -1,6 +1,6 @@
 [package]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.8.0"
+version = "0.8.1"
 authors = [
   "ryans <ryans@holaplex.com>",
   "Dana <dana@step.finance>",
@@ -37,12 +37,12 @@ thiserror = "1.0.30"
 veil = "0.1.6"
 zstd = "0.12.3+zstd.1.5.2"
 
-# solana-geyser-plugin-interface = { path = "../../../solana/geyser-plugin-interface", version = "=1.14.17" }
-# solana-logger = { path = "../../../solana/logger", version = "=1.14.17" }
-# solana-sdk = { path = "../../../solana/sdk", version = "=1.14.17" }
-# solana-program = { path = "../../../solana/sdk/program", version = "=1.14.17" }
-# solana-metrics = { path = "../../../solana/metrics", version = "=1.14.17" }
-# solana-transaction-status = { path = "../../../solana/transaction-status", version = "=1.14.17" }
+# solana-geyser-plugin-interface = { path = "../../../solana/geyser-plugin-interface" }
+# solana-logger = { path = "../../../solana/logger" }
+# solana-sdk = { path = "../../../solana/sdk" }
+# solana-program = { path = "../../../solana/sdk/program" }
+# solana-metrics = { path = "../../../solana/metrics" }
+# solana-transaction-status = { path = "../../../solana/transaction-status" }
 
 solana-geyser-plugin-interface = { version = "=1.14.19" }
 solana-logger = { version = "=1.14.19" }
