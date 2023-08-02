@@ -32,6 +32,7 @@ use crate::{
     prelude::*,
     selectors::{AccountSelector, InstructionSelector, TransactionSelector},
     sender::Sender,
+    stats::Stats,
 };
 
 const UNINIT: &str = "RabbitMQ plugin not initialized yet!";
@@ -48,7 +49,7 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 }
 
 #[derive(Debug)]
-pub(crate) struct Inner {
+pub(crate) struct Inner<'a> {
     rt: tokio::runtime::Runtime,
     producer: Sender,
     acct_sel: AccountSelector,
@@ -56,9 +57,10 @@ pub(crate) struct Inner {
     tx_sel: TransactionSelector,
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
+    stats: Stats<'a>,
 }
 
-impl Inner {
+impl<'a> Inner<'a> {
     pub fn spawn<F: std::future::Future<Output = anyhow::Result<()>> + Send + 'static>(
         self: &Arc<Self>,
         f: impl FnOnce(Arc<Self>) -> F,
@@ -399,22 +401,33 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 let stx: &SanitizedTransaction;
                 let meta: &TransactionStatusMeta;
+                let is_vote: bool;
 
                 match transaction {
                     ReplicaTransactionInfoVersions::V0_0_1(tx) => {
-                        if matches!(tx.transaction_status_meta.status, Err(..)) || tx.is_vote {
-                            return Ok(());
-                        }
                         stx = tx.transaction;
                         meta = tx.transaction_status_meta;
+                        is_vote = tx.is_vote;
                     },
                     ReplicaTransactionInfoVersions::V0_0_2(tx) => {
-                        if matches!(tx.transaction_status_meta.status, Err(..)) || tx.is_vote {
-                            return Ok(());
-                        }
                         stx = tx.transaction;
                         meta = tx.transaction_status_meta;
+                        is_vote = tx.is_vote;
                     },
+                }
+
+                let is_err = matches!(meta.status, Err(..));
+
+                //handle stats msg
+                //keep stats in 25 slot circle buffer
+                //send the 1st as the 26th slot comes in
+                //etc
+                //include stats on how much txs lag behind - as I'm curious
+                this.stats.process(stx, meta, slot, is_vote, is_err);
+
+                //no downstream processing of errors or votes
+                if is_err || is_vote {
+                    return Ok(());
                 }
 
                 //handle tx match

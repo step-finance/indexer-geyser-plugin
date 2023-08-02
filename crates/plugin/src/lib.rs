@@ -28,6 +28,7 @@ pub(crate) mod metrics;
 mod plugin;
 pub(crate) mod selectors;
 pub(crate) mod sender;
+pub(crate) mod stats;
 
 pub use plugin::GeyserPluginRabbitMq;
 
