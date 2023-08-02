@@ -49,7 +49,7 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 }
 
 #[derive(Debug)]
-pub(crate) struct Inner<'a> {
+pub(crate) struct Inner {
     rt: tokio::runtime::Runtime,
     producer: Sender,
     acct_sel: AccountSelector,
@@ -57,10 +57,10 @@ pub(crate) struct Inner<'a> {
     tx_sel: TransactionSelector,
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
-    stats: Stats<'a>,
+    stats: Stats,
 }
 
-impl<'a> Inner<'a> {
+impl Inner {
     pub fn spawn<F: std::future::Future<Output = anyhow::Result<()>> + Send + 'static>(
         self: &Arc<Self>,
         f: impl FnOnce(Arc<Self>) -> F,
