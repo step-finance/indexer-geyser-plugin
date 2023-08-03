@@ -1,7 +1,7 @@
 //! Queue configuration for Solana Geyser plugins intended to communicate
 //! with `holaplex-indexer`.
 
-use std::time::Duration;
+use std::{time::Duration, collections::{HashMap, HashSet}};
 
 use serde::{Deserialize, Serialize};
 pub use solana_program::pubkey::Pubkey;
@@ -207,6 +207,85 @@ pub enum SlotStatus {
     Confirmed,
 }
 
+///statistics for a slot
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotStatistics {
+    ///the slot these stats are for
+    pub slot: u64,
+
+    ///count of successful txs
+    pub tx_success: u64,
+    ///sum of the fees for successful txs
+    pub tx_success_fees: u64,
+    ///sum of the fees for successful txs with priority
+    pub tx_success_fees_priority: u64,
+
+    ///count of failed txs
+    pub tx_err: u64,
+    ///sum of the fees for failed txs
+    pub tx_err_fees: u64,
+    ///sum of the fees for failed txs with priority
+    pub tx_err_fees_priority: u64,
+
+    ///count of vote txs
+    pub tx_vote: u64,
+    ///sum of the fees for vote txs
+    pub tx_vote_fees: u64,
+
+    ///count of failed vote txs
+    pub tx_vote_err: u64,
+    ///sum of the fees for failed vote txs
+    pub tx_vote_err_fees: u64,
+
+    ///a map of programs to their stats
+    pub programs: HashMap<Pubkey, ProgramStats>,
+    ///a set of distinct payers
+    pub payers: HashSet<Pubkey>,
+    ///count of token accounts that were created by mint
+    pub new_token_accounts: HashMap<Pubkey, u64>,
+    ///count of fungible mints that were created
+    pub mints_fungible_new: u64,
+    ///count of non-fungible mints that were created
+    pub mints_nonfungible_new: u64,
+
+    ///random info about the slot or surrounding slots
+    ///allows sending some debug or interesting info from the stats processor
+    pub info: Vec<String>,
+}
+
+impl SlotStatistics {
+    ///clear the stats (set all 0)
+    pub fn clear(&mut self) {
+        self.slot = 0;
+        self.tx_success = 0;
+        self.tx_success_fees = 0;
+        self.tx_success_fees_priority = 0;
+        self.tx_err = 0;
+        self.tx_err_fees = 0;
+        self.tx_err_fees_priority = 0;
+        self.tx_vote = 0;
+        self.tx_vote_fees = 0;
+        self.tx_vote_err = 0;
+        self.tx_vote_err_fees = 0;
+        self.programs.clear();
+        self.payers.clear();
+        self.new_token_accounts.clear();
+        self.mints_fungible_new = 0;
+        self.mints_nonfungible_new = 0;
+        self.info.clear();
+    }
+}
+
+///stats by program
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
+pub struct ProgramStats {
+    ///count of successful txs
+    success: u64,
+    ///count of failed txs
+    failed: u64,
+}
+
 /// A message transmitted by a Geyser plugin
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
@@ -219,8 +298,10 @@ pub enum Message {
     TransactionNotify(Box<TransactionNotify>),
     /// indicates a block meta data has become available
     BlockMetadataNotify(BlockMetadataNotify),
-    /// indeicates the status of a slot has changed
+    /// indicates the status of a slot has changed
     SlotStatusNotify(SlotStatusNotify),
+    /// indicates the status of a slot has changed
+    SlotStatisticsNotify(SlotStatistics),
 }
 
 /// AMQP configuration for Geyser plugins

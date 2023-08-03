@@ -1,4 +1,4 @@
-use std::{env, sync::Arc};
+use std::{env, sync::{Arc, mpsc}};
 
 use anyhow::Context;
 use hashbrown::HashSet;
@@ -32,7 +32,7 @@ use crate::{
     prelude::*,
     selectors::{AccountSelector, InstructionSelector, TransactionSelector},
     sender::Sender,
-    stats::Stats,
+    stats::{Stats, StatsRequest},
 };
 
 const UNINIT: &str = "RabbitMQ plugin not initialized yet!";
@@ -50,14 +50,14 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 
 #[derive(Debug)]
 pub(crate) struct Inner {
-    rt: tokio::runtime::Runtime,
-    producer: Sender,
+    rt: Arc<tokio::runtime::Runtime>,
+    producer: Arc<Sender>,
     acct_sel: AccountSelector,
     ins_sel: InstructionSelector,
     tx_sel: TransactionSelector,
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
-    stats: Stats,
+    stats_sender: mpsc::SyncSender<StatsRequest>,
 }
 
 impl Inner {
@@ -190,8 +190,9 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             .max_blocking_threads(jobs.blocking.unwrap_or(jobs.limit))
             .build()
             .map_err(custom_err(&metrics.errs))?;
+        let rt = Arc::new(rt);
 
-        let producer = rt.block_on(async {
+        let s_producer = rt.block_on(async {
             let producer = Sender::new(
                 amqp,
                 format!("geyser-rabbitmq-{version}@{host}"),
@@ -211,6 +212,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
             Result::<_>::Ok(producer)
         })?;
+        let producer = Arc::new(s_producer);
+
+        //create the stats processor
+        let stats_sender = Stats::create_publisher(producer.clone(), rt.clone());
 
         self.0 = Some(Arc::new(Inner {
             rt,
@@ -220,6 +225,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             tx_sel,
             metrics,
             chain_progress,
+            stats_sender,
         }));
 
         info!("Plugin loaded");
@@ -418,12 +424,15 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 let is_err = matches!(meta.status, Err(..));
 
-                //handle stats msg
-                //keep stats in 25 slot circle buffer
-                //send the 1st as the 26th slot comes in
-                //etc
-                //include stats on how much txs lag behind - as I'm curious
-                this.stats.process(stx, meta, slot, is_vote, is_err);
+                this.stats_sender.send(
+                    StatsRequest {
+                        slot,
+                        stx: stx.clone(),
+                        meta: meta.clone(),
+                        is_vote,
+                        is_err,
+                    }
+                )?;
 
                 //no downstream processing of errors or votes
                 if is_err || is_vote {
