@@ -427,6 +427,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 let is_err = matches!(meta.status, Err(..));
 
+                //send this tx to the stats thread
                 this.stats_sender.send(StatsRequest {
                     slot,
                     stx: stx.clone(),

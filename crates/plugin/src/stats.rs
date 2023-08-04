@@ -13,6 +13,7 @@ const STAT_REQ_BUFFER_SIZE: usize = 2500;
 const SLOT_BUFFER_SIZE: usize = 25;
 const LAMPORTS_PER_SIG: u64 = 5000;
 
+///the message sent to a producer to process
 #[derive(Debug)]
 pub(crate) struct StatsRequest {
     pub slot: u64,
@@ -22,21 +23,35 @@ pub(crate) struct StatsRequest {
     pub is_err: bool,
 }
 
+///the main stats struct that holds everything the
+///stats thread needs to do its job
 #[derive(Debug)]
 pub(crate) struct Stats {
+    ///a quick shortcut into the slot_stats buffer for most recent slot
+    ///this should allow a hot path of code execution
     most_recent_slot_stats: (u64, usize),
+    ///the buffer of slot stats; slots stats are sent to rabbitmq after they
+    ///reach the size of the buffer. Thus, it's important to have the buffer large
+    ///enough to catch trailing transactions, but small enough to send before
+    ///the block is confirmed (so confirmooor can send it upon confirmation)
     slot_stats: [SlotStatistics; SLOT_BUFFER_SIZE],
+    ///the rabbitmq sender
     producer: Arc<Sender>,
+    ///the tokio async runtime to use for sending messages
     rt: Arc<tokio::runtime::Runtime>,
+    ///used to identify token program ixs
     token_programs: HashSet<Pubkey>,
 }
 
 impl Stats {
+    /// Create a new stats thread and return a handle to send stats requests to it
     pub fn create_publisher(
         producer: Arc<Sender>,
         rt: Arc<tokio::runtime::Runtime>,
     ) -> mpsc::SyncSender<StatsRequest> {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
+        //we use a dedicated worker thread, we don't play in the async dancing sandbox
+        //that the producer message sender uses
         rt.clone().spawn_blocking(move || {
             let mut stats = Stats {
                 most_recent_slot_stats: Default::default(),
@@ -49,10 +64,12 @@ impl Stats {
                 rt,
                 token_programs: Self::get_token_programs(),
             };
+            //the thread's endless loop of message processing
             while let Ok(req) = rx.recv() {
                 stats.process(req.slot, &req.stx, &req.meta, req.is_vote, req.is_err);
             }
         });
+        //return the channel sender for the geyser thread to send messages to
         tx
     }
 
@@ -73,6 +90,8 @@ impl Stats {
         is_vote: bool,
         is_err: bool,
     ) {
+        //deconstruct the stats so we can borrow the peices mutably
+        //independent of each other
         let Stats {
             token_programs,
             most_recent_slot_stats,
@@ -115,12 +134,19 @@ impl Stats {
         //else
         //stats in buffer doesn't match slot
         if buffer_slot_stats.slot > slot {
+            //throw some informational logging into the message that will be sent in
+            //whatever slot this is that was in the place we expected to be
+            //for debugging/informational purposes
+            buffer_slot_stats
+                .info
+                .push(format!("tx for slot {} too old, discarding", slot));
             //slot is too old, discard
             return;
-        } 
+        }
 
         //slot is newer than whats in the buffer
         //thus there must be at least 1 slot to send
+        //(definitely the one in our place in the buffer)
 
         //send any stats that are >= SLOT_BUFFER_SIZE slots behind
         //this needs to account for skipping slots
@@ -172,6 +198,7 @@ fn send_stats(
     });
 }
 
+///the main logic for updating stats
 #[inline]
 fn process_slot(
     stats: &mut SlotStatistics,
