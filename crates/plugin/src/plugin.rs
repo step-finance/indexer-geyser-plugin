@@ -312,7 +312,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             data,
                             accounts,
                             slot,
-                            block_time: 0,
+                            block_time: None,
                         }),
                         route,
                     )))

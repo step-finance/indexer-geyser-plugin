@@ -39,7 +39,7 @@ pub struct AccountUpdate {
     pub slot: u64,
     /// The block_time in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
-    pub block_time: i64,
+    pub block_time: Option<i64>,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
     /// First signature of the transaction caused this account modification
@@ -104,7 +104,7 @@ pub struct UiAccountUpdate {
     pub slot: u64,
     /// The block_time in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
-    pub block_time: i64,
+    pub block_time: Option<i64>,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
     /// First signature of the transaction caused this account modification
@@ -126,7 +126,7 @@ pub struct InstructionNotify {
     pub slot: u64,
     /// The block_time in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
-    pub block_time: i64,
+    pub block_time: Option<i64>,
 }
 
 #[allow(clippy::from_over_into)]
@@ -173,7 +173,7 @@ pub struct UiInstructionNotify {
     pub slot: u64,
     /// the time of the block
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
-    pub block_time: i64,
+    pub block_time: Option<i64>,
 }
 
 /// Message data for an instruction notification
@@ -234,7 +234,7 @@ pub struct SlotStatistics {
     pub slot: u64,
     ///the blocktime of the slot
     /// this is not known for processing, but is later used in confirmooor
-    pub block_time: i64,
+    pub block_time: Option<i64>,
 
     ///count of successful txs
     pub tx_success: u64,
@@ -280,7 +280,7 @@ impl SlotStatistics {
     ///clear the stats (set all 0)
     pub fn clear(&mut self) {
         self.slot = 0;
-        self.block_time = 0;
+        self.block_time = None;
         self.tx_success = 0;
         self.tx_success_fees = 0;
         self.tx_success_fees_priority = 0;
