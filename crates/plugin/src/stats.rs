@@ -252,6 +252,9 @@ fn process_slot(
 
             if token_programs.contains(pgm_ref) && data_len > 0 {
                 let disc = ix_ref.data[0];
+                //reference:
+                //  https://docs.rs/spl-token-2022/0.7.0/src/spl_token_2022/instruction.rs.html
+                //  https://docs.rs/spl-token/4.0.0/src/spl_token/instruction.rs.html
                 match disc {
                     //initialize mint
                     0 | 20 => {
