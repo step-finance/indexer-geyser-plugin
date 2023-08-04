@@ -184,7 +184,7 @@ fn send_stats(
             stats_to_send.push(stats_clone);
 
             //clear existing
-            *slot_stat = SlotStatistics::default();
+            slot_stat.clear();
         }
     }
     let producer = producer.clone();

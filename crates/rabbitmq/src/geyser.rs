@@ -37,6 +37,9 @@ pub struct AccountUpdate {
     pub write_version: u64,
     /// The slot in which this account was updated
     pub slot: u64,
+    /// The block_time in which this account was updated
+    /// this is not known during processing, but is filled out by confirmooor when slots confirm
+    pub block_time: i64,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
     /// First signature of the transaction caused this account modification
@@ -55,6 +58,7 @@ impl Into<UiAccountUpdate> for AccountUpdate {
             data: base64::encode(self.data),
             write_version: self.write_version,
             slot: self.slot,
+            block_time: self.block_time,
             is_startup: self.is_startup,
             txn_signature: self.txn_signature,
         }
@@ -72,6 +76,7 @@ impl From<UiAccountUpdate> for AccountUpdate {
             data: base64::decode(ui.data).unwrap(),
             write_version: ui.write_version,
             slot: ui.slot,
+            block_time: ui.block_time,
             is_startup: ui.is_startup,
             txn_signature: ui.txn_signature,
         }
@@ -97,6 +102,9 @@ pub struct UiAccountUpdate {
     pub write_version: u64,
     /// The slot in which this account was updated
     pub slot: u64,
+    /// The block_time in which this account was updated
+    /// this is not known during processing, but is filled out by confirmooor when slots confirm
+    pub block_time: i64,
     /// True if this update was triggered by a validator startup
     pub is_startup: bool,
     /// First signature of the transaction caused this account modification
@@ -116,6 +124,9 @@ pub struct InstructionNotify {
     /// The slot in which the transaction including this instruction was
     /// reported
     pub slot: u64,
+    /// The block_time in which this account was updated
+    /// this is not known during processing, but is filled out by confirmooor when slots confirm
+    pub block_time: i64,
 }
 
 #[allow(clippy::from_over_into)]
@@ -130,6 +141,7 @@ impl Into<UiInstructionNotify> for InstructionNotify {
                 .map(std::string::ToString::to_string)
                 .collect(),
             slot: self.slot,
+            block_time: self.block_time,
         }
     }
 }
@@ -141,6 +153,7 @@ impl From<UiInstructionNotify> for InstructionNotify {
             data: base64::decode(ui.data).unwrap(),
             accounts: ui.accounts.iter().map(|a| a.parse().unwrap()).collect(),
             slot: ui.slot,
+            block_time: ui.block_time,
         }
     }
 }
@@ -158,6 +171,9 @@ pub struct UiInstructionNotify {
     /// The slot in which the transaction including this instruction was
     /// reported
     pub slot: u64,
+    /// the time of the block
+    /// this is not known during processing, but is filled out by confirmooor when slots confirm
+    pub block_time: i64,
 }
 
 /// Message data for an instruction notification
@@ -216,6 +232,9 @@ pub enum SlotStatus {
 pub struct SlotStatistics {
     ///the slot these stats are for
     pub slot: u64,
+    ///the blocktime of the slot
+    /// this is not known for processing, but is later used in confirmooor
+    pub block_time: i64,
 
     ///count of successful txs
     pub tx_success: u64,
@@ -261,6 +280,7 @@ impl SlotStatistics {
     ///clear the stats (set all 0)
     pub fn clear(&mut self) {
         self.slot = 0;
+        self.block_time = 0;
         self.tx_success = 0;
         self.tx_success_fees = 0;
         self.tx_success_fees_priority = 0;
