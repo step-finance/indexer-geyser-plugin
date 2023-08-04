@@ -1,11 +1,11 @@
 use std::collections::HashSet;
-use std::sync::{Arc, mpsc};
+use std::sync::{mpsc, Arc};
 
-use indexer_rabbitmq::geyser::{SlotStatistics, Message};
+use crate::prelude::*;
+use indexer_rabbitmq::geyser::{Message, SlotStatistics};
 use solana_program::instruction::CompiledInstruction;
 use solana_sdk::transaction::SanitizedTransaction;
 use solana_transaction_status::TransactionStatusMeta;
-use crate::prelude::*;
 
 use crate::sender::Sender;
 
@@ -32,21 +32,26 @@ pub(crate) struct Stats {
 }
 
 impl Stats {
-    pub fn create_publisher(producer: Arc<Sender>, rt: Arc<tokio::runtime::Runtime>) -> mpsc::SyncSender<StatsRequest> {
+    pub fn create_publisher(
+        producer: Arc<Sender>,
+        rt: Arc<tokio::runtime::Runtime>,
+    ) -> mpsc::SyncSender<StatsRequest> {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
-        rt.clone().spawn_blocking( move || {
+        rt.clone().spawn_blocking(move || {
             let mut stats = Stats {
                 most_recent_slot_stats: Default::default(),
-                slot_stats: std::iter::repeat::<SlotStatistics>(Default::default()).take(SLOT_BUFFER_SIZE).collect::<Vec<SlotStatistics>>().try_into().unwrap(),
+                slot_stats: std::iter::repeat::<SlotStatistics>(SlotStatistics::default())
+                    .take(SLOT_BUFFER_SIZE)
+                    .collect::<Vec<SlotStatistics>>()
+                    .try_into()
+                    .unwrap(),
                 producer,
                 rt,
                 token_programs: Self::get_token_programs(),
             };
             while let Ok(req) = rx.recv() {
-                if let Err(e) = stats.process(req.slot, req.stx, req.meta, req.is_vote, req.is_err) {
-                    error!("Stats processing error: {:?}", e);
-                }
-            };
+                stats.process(req.slot, &req.stx, &req.meta, req.is_vote, req.is_err);
+            }
         });
         tx
     }
@@ -59,14 +64,15 @@ impl Stats {
     }
 
     //handle stats msg
+    #[allow(clippy::cast_possible_truncation)]
     fn process(
         &mut self,
         slot: u64,
-        stx: SanitizedTransaction,
-        meta: TransactionStatusMeta,
+        stx: &SanitizedTransaction,
+        meta: &TransactionStatusMeta,
         is_vote: bool,
         is_err: bool,
-    ) -> anyhow::Result<()> {
+    ) {
         let Stats {
             token_programs,
             most_recent_slot_stats,
@@ -79,7 +85,15 @@ impl Stats {
         if slot == most_recent_slot_stats.0 {
             //quickly update stats
             let most_recent_stats = &mut slot_stats[most_recent_slot_stats.1];
-            return process_slot(most_recent_stats, token_programs, stx, meta, is_vote, is_err);
+            process_slot(
+                most_recent_stats,
+                token_programs,
+                stx,
+                meta,
+                is_vote,
+                is_err,
+            );
+            return;
         }
         //try and find slot in buffer
         let idx = (slot % SLOT_BUFFER_SIZE as u64) as usize;
@@ -88,106 +102,117 @@ impl Stats {
         //decent path; found by index
         if buffer_slot_stats.slot == slot {
             //update stats
-            return process_slot(buffer_slot_stats, &token_programs, stx, meta, is_vote, is_err);
+            process_slot(
+                buffer_slot_stats,
+                token_programs,
+                stx,
+                meta,
+                is_vote,
+                is_err,
+            );
+            return;
         }
         //else
         //stats in buffer doesn't match slot
         if buffer_slot_stats.slot > slot {
             //slot is too old, discard
-            
-            return Ok(());
-        } else {
-            //slot is newer than whats in the buffer
-            //thus there must be at least 1 slot to send
-            
-            //send any stats that are >= SLOT_BUFFER_SIZE slots behind
-            //this needs to account for skipping slots
-            //so it has to scan array
-            send_stats(slot_stats, slot, producer, rt)?;
+            return;
+        } 
 
-            //now get stats for current slot (should have been reset by send_stats)
-            let new_stats = &mut slot_stats[idx];
-            new_stats.slot = slot;
-            process_slot(new_stats, &token_programs, stx, meta, is_vote, is_err)?;
+        //slot is newer than whats in the buffer
+        //thus there must be at least 1 slot to send
 
-            //assign to most recent if applicable
-            if slot > most_recent_slot_stats.0 {
-                *most_recent_slot_stats = (slot, idx);
-            }
+        //send any stats that are >= SLOT_BUFFER_SIZE slots behind
+        //this needs to account for skipping slots
+        //so it has to scan array
+        send_stats(slot_stats, slot, producer, rt);
 
-            return Ok(());
+        //now get stats for current slot (should have been reset by send_stats)
+        let new_stats = &mut slot_stats[idx];
+        new_stats.slot = slot;
+        process_slot(new_stats, token_programs, stx, meta, is_vote, is_err);
+
+        //assign to most recent if applicable
+        if slot > most_recent_slot_stats.0 {
+            *most_recent_slot_stats = (slot, idx);
         }
     }
-
 }
 
-///send stats for slots that are >= SLOT_BUFFER_SIZE slots behind
+///send stats for slots that are >= `SLOT_BUFFER_SIZE` slots behind
 ///this clears out needed slots for new stats
 #[inline]
-fn send_stats(slot_stats: &mut [SlotStatistics; SLOT_BUFFER_SIZE], slot: u64, producer: &Arc<Sender>, rt: &Arc<tokio::runtime::Runtime>) -> anyhow::Result<()> {
+fn send_stats(
+    slot_stats: &mut [SlotStatistics; SLOT_BUFFER_SIZE],
+    slot: u64,
+    producer: &Arc<Sender>,
+    rt: &Arc<tokio::runtime::Runtime>,
+) {
     let mut stats_to_send = Vec::<SlotStatistics>::with_capacity(4);
     let oldest_slot_not_allowed = slot - SLOT_BUFFER_SIZE as u64;
-    for i in 0..SLOT_BUFFER_SIZE {
-        let processing_slot = slot_stats[i].slot;
+    for slot_stat in slot_stats.iter_mut().take(SLOT_BUFFER_SIZE) {
+        let processing_slot = slot_stat.slot;
         if processing_slot > 0 && processing_slot <= oldest_slot_not_allowed {
             //send stats
-            let stats_clone = slot_stats[i].clone();
+            let stats_clone = slot_stat.clone();
             stats_to_send.push(stats_clone);
 
-            //clear existing 
-            slot_stats[i] = Default::default();
+            //clear existing
+            *slot_stat = SlotStatistics::default();
         }
     }
     let producer = producer.clone();
     rt.spawn(async move {
         for stats in stats_to_send {
             let stats_msg = Message::SlotStatisticsNotify(stats);
-            producer.send(stats_msg, "multi.chain.slot_statistics").await;
+            producer
+                .send(stats_msg, "multi.chain.slot_statistics")
+                .await;
         }
     });
-    Ok(())
 }
 
 #[inline]
 fn process_slot(
     stats: &mut SlotStatistics,
     token_programs: &HashSet<Pubkey>,
-    stx: SanitizedTransaction,
-    meta: TransactionStatusMeta,
+    stx: &SanitizedTransaction,
+    meta: &TransactionStatusMeta,
     is_vote: bool,
     is_err: bool,
-) -> anyhow::Result<()> {
-    
+) {
     let fee = LAMPORTS_PER_SIG * stx.signatures().len() as u64;
-    let fee_priority = meta.fee - fee; 
+    let fee_priority = meta.fee - fee;
 
     if is_vote && is_err {
         stats.tx_vote_err += 1;
         stats.tx_vote_err_fees += fee;
+    } else if is_vote {
+        stats.tx_vote += 1;
+        stats.tx_vote_fees += fee;
+    } else if is_err {
+        stats.tx_err += 1;
+        stats.tx_err_fees += fee;
+        stats.tx_err_fees_priority += fee_priority;
     } else {
-        if is_vote {
-            stats.tx_vote += 1;
-            stats.tx_vote_fees += fee;
-        }  else if is_err {
-            stats.tx_err += 1;
-            stats.tx_err_fees += fee;
-            stats.tx_err_fees_priority += fee_priority;
-        } else {
-            stats.tx_success += 1;
-            stats.tx_success_fees += fee;
-            stats.tx_success_fees_priority += fee_priority;
-        }
+        stats.tx_success += 1;
+        stats.tx_success_fees += fee;
+        stats.tx_success_fees_priority += fee_priority;
     }
 
     let msg = stx.message();
     let accts = msg.account_keys();
-    let inner_ixs: Vec<(&Pubkey, &CompiledInstruction)> = meta.inner_instructions.iter().flat_map(|ixss| {
-        ixss.into_iter().flat_map(|ixs| {
-            ixs.instructions.iter().map(|ix| {
-                (&accts[ix.program_id_index as usize], ix)
+    let inner_ixs: Vec<(&Pubkey, &CompiledInstruction)> = meta
+        .inner_instructions
+        .iter()
+        .flat_map(|ixss| {
+            ixss.iter().flat_map(|ixs| {
+                ixs.instructions
+                    .iter()
+                    .map(|ix| (&accts[ix.program_id_index as usize], ix))
             })
         })
-    }).collect();
+        .collect();
     let all_ixs = msg.program_instructions_iter().into_iter().chain(inner_ixs);
     for (pgm_ref, ix_ref) in all_ixs {
         let e = stats.programs.entry(pgm_ref.to_string()).or_default();
@@ -198,7 +223,7 @@ fn process_slot(
 
             let data_len = ix_ref.data.len();
 
-            if token_programs.contains(&pgm_ref) && data_len > 0 {
+            if token_programs.contains(pgm_ref) && data_len > 0 {
                 let disc = ix_ref.data[0];
                 match disc {
                     //initialize mint
@@ -211,7 +236,7 @@ fn process_slot(
                                 stats.mints_fungible_new += 1;
                             }
                         }
-                    }
+                    },
                     //initialize account
                     1 | 16 | 18 => {
                         if ix_ref.accounts.len() > 1 {
@@ -220,13 +245,11 @@ fn process_slot(
                             *val += 1;
                         }
                     },
-                    _ => {}
+                    _ => {},
                 }
             }
         }
     }
 
     stats.payers.insert(msg.fee_payer().to_string());
-
-    Ok(())
 }

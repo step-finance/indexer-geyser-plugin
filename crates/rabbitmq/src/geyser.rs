@@ -1,7 +1,10 @@
 //! Queue configuration for Solana Geyser plugins intended to communicate
 //! with `holaplex-indexer`.
 
-use std::{time::Duration, collections::{HashMap, HashSet}};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 
 use serde::{Deserialize, Serialize};
 pub use solana_program::pubkey::Pubkey;

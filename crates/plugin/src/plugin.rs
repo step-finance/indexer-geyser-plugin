@@ -1,4 +1,7 @@
-use std::{env, sync::{Arc, mpsc}};
+use std::{
+    env,
+    sync::{mpsc, Arc},
+};
 
 use anyhow::Context;
 use hashbrown::HashSet;
@@ -424,15 +427,13 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 let is_err = matches!(meta.status, Err(..));
 
-                this.stats_sender.send(
-                    StatsRequest {
-                        slot,
-                        stx: stx.clone(),
-                        meta: meta.clone(),
-                        is_vote,
-                        is_err,
-                    }
-                )?;
+                this.stats_sender.send(StatsRequest {
+                    slot,
+                    stx: stx.clone(),
+                    meta: meta.clone(),
+                    is_vote,
+                    is_err,
+                })?;
 
                 //no downstream processing of errors or votes
                 if is_err || is_vote {
