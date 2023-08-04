@@ -303,7 +303,7 @@ pub enum Message {
     BlockMetadataNotify(BlockMetadataNotify),
     /// indicates the status of a slot has changed
     SlotStatusNotify(SlotStatusNotify),
-    /// indicates the status of a slot has changed
+    /// statistics for a slot are available
     SlotStatisticsNotify(SlotStatistics),
 }
 
