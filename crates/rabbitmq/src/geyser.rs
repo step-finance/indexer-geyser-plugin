@@ -239,11 +239,11 @@ pub struct SlotStatistics {
     pub tx_vote_err_fees: u64,
 
     ///a map of programs to their stats
-    pub programs: HashMap<Pubkey, ProgramStats>,
+    pub programs: HashMap<String, ProgramStats>,
     ///a set of distinct payers
-    pub payers: HashSet<Pubkey>,
+    pub payers: HashSet<String>,
     ///count of token accounts that were created by mint
-    pub new_token_accounts: HashMap<Pubkey, u64>,
+    pub new_token_accounts: HashMap<String, u64>,
     ///count of fungible mints that were created
     pub mints_fungible_new: u64,
     ///count of non-fungible mints that were created
@@ -281,9 +281,9 @@ impl SlotStatistics {
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Default)]
 pub struct ProgramStats {
     ///count of successful txs
-    success: u64,
+    pub success: u64,
     ///count of failed txs
-    failed: u64,
+    pub failed: u64,
 }
 
 /// A message transmitted by a Geyser plugin
