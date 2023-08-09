@@ -6,6 +6,20 @@ Forked from Holaplex's plugin, this plugin publishes to RabbitMQ
 
 Clone, build
 
+## Testing
+
+- Clone the Step Finance Solana repo (use latest `step-plugin` branch). We do have changes to Solana itself to support sending data in messages to Geyser.
+- Build Solana via `cargo build --release` in its root.
+- Build local repo in release mode `cargo build --release`.
+- Run a local rabbitmq `docker run -it --rm -h rabbitmq --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management` (you can also run this with `-d` instead of `-it` to run in background, but I prefer using a seperate terminal window and stopping it when done)
+- Login to rabbit to make sure it is running at http://localhost:15672/ - default login will be `guest`/`guest`. You don't need to create anything, the plugin will handle that.
+- Edit `crates/plugin/sample_config.json` to point to this local rabbitmq (it should be already tho)
+- Run test validator from the Solana repo dir like this: `./target/release/solana-test-validator -l $PWD/../test-ledger -r --geyser-plugin-config ../indexer-geyser-plugin/crates/plugin/sample_config.json`. This assumes the solana repo is a sibling of this repo's root.
+
+You should now see messages hitting the exchange `devnet.processed.messages` on your local rabbit.
+
+You can make queues to subscribe to this exchange to debug things, or to go further downstream check out the `step-confirmooor` repo.
+
 ## Config
 
 The configuration that Holaplex has was modified slightly:

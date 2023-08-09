@@ -19,6 +19,7 @@ pub fn create_account_update(
             is_startup,
             txn_signature: None,
             write_version: account.write_version,
+            block_time: None,
         },
         ReplicaAccountInfoVersions::V0_0_2(account) => AccountUpdate {
             key: Pubkey::new_from_array(account.pubkey.try_into().unwrap()),
@@ -31,6 +32,7 @@ pub fn create_account_update(
             is_startup,
             txn_signature: account.txn_signature.map(std::string::ToString::to_string),
             write_version: account.write_version,
+            block_time: None,
         },
     }
 }

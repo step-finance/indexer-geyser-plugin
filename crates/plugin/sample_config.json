@@ -2,7 +2,7 @@
   "libpath": "../../target/release/libholaplex_indexer_rabbitmq_geyser.so",
   "amqp": {
     "network": "devnet",
-    "address": "amqps://dana-dev:redacted@b-6fcd6565-cf03-4163-88a9-5617d1f25149.mq.eu-north-1.amazonaws.com:5671/dana-dev"
+    "address": "amqp://guest:guest@localhost:5672"
   },
   "jobs": {
     "limit": 16
