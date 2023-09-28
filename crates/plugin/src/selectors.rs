@@ -249,7 +249,7 @@ impl TransactionSelector {
                 meta.inner_instructions
                     .iter()
                     .flatten()
-                    .flat_map(|ii| ii.instructions.iter()),
+                    .flat_map(|ii| ii.instructions.iter().map(|i| &i.instruction)),
             )
             .map(|a| a.program_id_index.into())
             .unique()

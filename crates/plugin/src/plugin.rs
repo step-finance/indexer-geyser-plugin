@@ -9,7 +9,7 @@ use indexer_rabbitmq::geyser::{
     BlockMetadataNotify, InstructionNotify, Message, SlotStatusNotify, TransactionNotify,
 };
 use solana_geyser_plugin_interface::geyser_plugin_interface::{
-    ReplicaAccountInfoV2, ReplicaBlockInfoVersions, SlotStatus,
+    ReplicaAccountInfoV2, ReplicaAccountInfoV3, ReplicaBlockInfoVersions, SlotStatus,
 };
 use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
@@ -237,7 +237,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
     }
 
     fn update_account(
-        &mut self,
+        &self,
         account: ReplicaAccountInfoVersions,
         slot: u64,
         is_startup: bool,
@@ -252,6 +252,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                     },
                     ReplicaAccountInfoVersions::V0_0_2(acct) => {
                         let ReplicaAccountInfoV2 { pubkey, owner, .. } = *acct;
+                        (pubkey, owner)
+                    },
+                    ReplicaAccountInfoVersions::V0_0_3(acct) => {
+                        let ReplicaAccountInfoV3 { pubkey, owner, .. } = *acct;
                         (pubkey, owner)
                     },
                 };
@@ -275,7 +279,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
     #[allow(clippy::too_many_lines)]
     fn notify_transaction(
-        &mut self,
+        &self,
         transaction: ReplicaTransactionInfoVersions,
         slot: u64,
     ) -> Result<()> {
@@ -475,7 +479,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             meta.inner_instructions
                                 .iter()
                                 .flatten()
-                                .flat_map(|i| i.instructions.iter()),
+                                .flat_map(|i| i.instructions.iter().map(|i| &i.instruction)),
                         ) {
                             match process_instruction(&this.ins_sel, ins, &keys, slot) {
                                 Ok(Some(m)) => {
@@ -505,12 +509,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
     /// Called when a slot status is updated
     #[allow(unused_variables)]
-    fn update_slot_status(
-        &mut self,
-        slot: u64,
-        parent: Option<u64>,
-        status: SlotStatus,
-    ) -> Result<()> {
+    fn update_slot_status(&self, slot: u64, parent: Option<u64>, status: SlotStatus) -> Result<()> {
         self.with_inner(
             || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
             |this| {
@@ -539,7 +538,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
     /// Called when block's metadata is updated.
     #[allow(unused_variables)]
-    fn notify_block_metadata(&mut self, blockinfo: ReplicaBlockInfoVersions) -> Result<()> {
+    fn notify_block_metadata(&self, blockinfo: ReplicaBlockInfoVersions) -> Result<()> {
         self.with_inner(
             || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
             |this| {
@@ -548,6 +547,20 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 };
                 match blockinfo {
                     ReplicaBlockInfoVersions::V0_0_1(bi) => {
+                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                            blockhash: String::from(bi.blockhash),
+                            slot: bi.slot,
+                            block_time: bi.block_time.unwrap_or_default(),
+                            block_height: bi.block_height.unwrap_or_default(),
+                        });
+                        this.spawn(|this| async move {
+                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.metrics.sends.log(1);
+
+                            Ok(())
+                        });
+                    },
+                    ReplicaBlockInfoVersions::V0_0_2(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
                             blockhash: String::from(bi.blockhash),
                             slot: bi.slot,
