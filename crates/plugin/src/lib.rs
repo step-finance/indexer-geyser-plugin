@@ -40,5 +40,5 @@ pub use plugin::GeyserPluginRabbitMq;
 /// This function is only safe if called by a Solana Geyser plugin manager
 /// conformant to the plugin interface.
 pub unsafe extern "C" fn _create_plugin() -> *mut dyn interface::GeyserPlugin {
-    Box::into_raw(Box::new(GeyserPluginRabbitMq::default()))
+    Box::into_raw(Box::<GeyserPluginRabbitMq>::default())
 }

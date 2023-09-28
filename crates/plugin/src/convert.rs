@@ -34,5 +34,18 @@ pub fn create_account_update(
             write_version: account.write_version,
             block_time: None,
         },
+        ReplicaAccountInfoVersions::V0_0_3(account) => AccountUpdate {
+            key: Pubkey::new_from_array(account.pubkey.try_into().unwrap()),
+            lamports: account.lamports,
+            slot,
+            data: account.data.to_owned(),
+            executable: account.executable,
+            owner: Pubkey::new_from_array(account.owner.try_into().unwrap()),
+            rent_epoch: account.rent_epoch,
+            is_startup,
+            txn_signature: account.txn.map(|a| a.signature().to_string()),
+            write_version: account.write_version,
+            block_time: None,
+        },
     }
 }
