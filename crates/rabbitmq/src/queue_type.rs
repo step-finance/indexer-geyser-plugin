@@ -147,11 +147,6 @@ impl<'a> QueueInfo<'a> {
         let mut queue_fields = FieldTable::default();
 
         queue_fields.insert(
-            "x-max-length-bytes".into(),
-            AMQPValue::LongLongInt(self.0.max_len_bytes),
-        );
-
-        queue_fields.insert(
             "x-dead-letter-exchange".into(),
             AMQPValue::LongString(self.dl_exchange().into()),
         );
@@ -250,11 +245,6 @@ impl<'a> QueueInfo<'a> {
             let mut queue_fields = FieldTable::default();
 
             queue_fields.insert(
-                "x-max-length-bytes".into(),
-                AMQPValue::LongLongInt(self.0.max_len_bytes),
-            );
-
-            queue_fields.insert(
                 "x-dead-letter-exchange".into(),
                 AMQPValue::LongString(exchange.clone().into()),
             );
@@ -285,12 +275,7 @@ impl<'a> QueueInfo<'a> {
         }
 
         {
-            let mut queue_fields = FieldTable::default();
-            queue_fields.insert(
-                "x-max-length-bytes".into(),
-                // Top out length at 100 MiB
-                AMQPValue::LongLongInt(self.0.max_len_bytes.min(100 * 1024 * 1024)),
-            );
+            let queue_fields = FieldTable::default();
 
             // TODO: add a true DL queue
 

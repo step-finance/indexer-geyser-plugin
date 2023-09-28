@@ -139,7 +139,7 @@ impl Stats {
             //for debugging/informational purposes
             buffer_slot_stats
                 .info
-                .push(format!("tx for slot {} too old, discarding", slot));
+                .push(format!("tx for slot {slot} too old, discarding"));
             //slot is too old, discard
             return;
         }
@@ -234,13 +234,16 @@ fn process_slot(
         .iter()
         .flat_map(|ixss| {
             ixss.iter().flat_map(|ixs| {
-                ixs.instructions
-                    .iter()
-                    .map(|ix| (&accts[ix.program_id_index as usize], ix))
+                ixs.instructions.iter().map(|ix| {
+                    (
+                        &accts[ix.instruction.program_id_index as usize],
+                        &ix.instruction,
+                    )
+                })
             })
         })
         .collect();
-    let all_ixs = msg.program_instructions_iter().into_iter().chain(inner_ixs);
+    let all_ixs = msg.program_instructions_iter().chain(inner_ixs);
     for (pgm_ref, ix_ref) in all_ixs {
         let e = stats.programs.entry(pgm_ref.to_string()).or_default();
         if is_err {

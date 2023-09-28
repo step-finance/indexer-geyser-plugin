@@ -1,7 +1,7 @@
 {
   "libpath": "../../target/release/libholaplex_indexer_rabbitmq_geyser.so",
   "amqp": {
-    "network": "devnet",
+    "network": "mainnet",
     "address": "amqp://guest:guest@localhost:5672"
   },
   "jobs": {
