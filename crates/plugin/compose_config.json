@@ -1,5 +1,5 @@
 {
-  "libpath": "./libholaplex_indexer_rabbitmq_geyser.so",
+  "libpath": "/geyser/libholaplex_indexer_rabbitmq_geyser.so",
   "amqp": {
     "network": "mainnet",
     "address": "amqp://guest:guest@rabbitmq:5672"
