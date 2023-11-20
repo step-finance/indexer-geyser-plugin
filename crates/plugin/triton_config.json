@@ -1,49 +1,54 @@
 {
-  "accounts": {
-      "owners": {},
-      "pubkeys": {},
-      "startup": false
-  },
-  "amqp": {
-      "address": "amqps://",
-      "network": "mainnet"
-  },
-  "instructions": {
-      "allTokenCalls": true,
-      "programs": {}
-  },
-  "jobs": {
-      "limit": 16
-  },
-  "chainProgress": {
-    "blockMeta": true,
-    "slotStatus": true
-  },
-  "libpath": "/home/solana/libholaplex_indexer_rabbitmq_geyser.so",
-  "transactions": {
-      "programs": {
-          "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8": "sf",
-          "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K": "sf",
-          "5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN": "sf",
-          "CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz": "sf",
-          "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk": "sf",
-          "hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu": "sf",
-          "HYPERfwdTjyJ2SCaKHmpF2MtrXqWxrsotYDsTrshHWq8": "sf",
-          "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN": "sf",
-          "mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc": "sf",
-          "TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp": "sf",
-          "SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g": "sf",
+    "accounts": {
+        "owners": {},
+        "pubkeys": {},
+        "startup": false
+    },
+    "amqp": {
+        "address": "amqps://",
+        "network": "mainnet"
+    },
+    "instructions": {
+        "allTokenCalls": true,
+        "programs": {}
+    },
+    "jobs": {
+        "limit": 16
+    },
+    "chainProgress": {
+        "blockMeta": true,
+        "slotStatus": true
+    },
+    "libpath": "/home/solana/libholaplex_indexer_rabbitmq_geyser.so",
+    "transactions": {
+        "programs": {
+            "MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8": "sf",
+            "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K": "sf",
+            "5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN": "sf",
+            "CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz": "sf",
+            "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk": "sf",
+            "hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu": "sf",
+            "HYPERfwdTjyJ2SCaKHmpF2MtrXqWxrsotYDsTrshHWq8": "sf",
+            "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN": "sf",
+            "mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc": "sf",
+            "TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp": "sf",
+            "SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g": "sf",
 
-          "srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX": "defi",
-          "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY": "defi",
-          "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": "defi",
-          "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin": "defi",
-          "EUqojwWA2rd19FZrzeBncJsm38Jm1hEhE3zsmX3bRc2o": "defi",
-          "BJ3jrUzddfuSrZHXSCxMUUQsjKEyLmuuyZebkcaFp2fg": "defi",
-          "11111111111111111111111111111111": "defi",
-          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "defi",
-          "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": "defi"
-      },
-      "pubkeys": {}
-  }
+            "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo": "defi",
+            "JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph": "defi",
+            "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB": "defi",
+            "JUP5pEAZeHdHrLxh5UCwAbpjGwYKKoquCpda2hfP4u8": "defi",
+            "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": "defi",
+            "srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX": "defi",
+            "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY": "defi",
+            "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": "defi",
+            "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin": "defi",
+            "EUqojwWA2rd19FZrzeBncJsm38Jm1hEhE3zsmX3bRc2o": "defi",
+            "BJ3jrUzddfuSrZHXSCxMUUQsjKEyLmuuyZebkcaFp2fg": "defi",
+            "11111111111111111111111111111111": "defi",
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "defi",
+            "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": "defi"
+        },
+        "pubkeys": {}
+    }
 }
