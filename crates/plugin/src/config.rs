@@ -173,7 +173,7 @@ impl Config {
 mod tests {
     use anyhow::Result;
     use solana_program::pubkey::Pubkey;
-    use std::{path::PathBuf, fs};
+    use std::{fs, path::PathBuf};
 
     use super::Config;
 
