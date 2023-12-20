@@ -26,6 +26,18 @@ pub struct Config {
     /// Unused but required by the validator to load the plugin
     #[allow(dead_code)]
     libpath: String,
+
+    /// Unused here but is in validator
+    #[allow(dead_code)]
+    datum_program_inclusions: Option<HashMap<String, DatumInclusion>>,
+}
+
+#[derive(Deserialize, Debug)]
+struct DatumInclusion {
+    #[allow(dead_code)]
+    pre: Option<bool>,
+    #[allow(dead_code)]
+    post: Option<bool>,
 }
 
 #[serde_with::serde_as]
@@ -140,6 +152,7 @@ impl Config {
             instructions,
             transactions,
             libpath: _,
+            datum_program_inclusions: _,
         } = self;
 
         let acct =
