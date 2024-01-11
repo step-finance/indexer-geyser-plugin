@@ -7,8 +7,7 @@
   "jobs": {
     "limit": 16
   },
-  "metrics": {
-  },
+  "metrics": {},
   "chainProgress": {
     "blockMeta": true,
     "slotStatus": true
@@ -20,7 +19,7 @@
   },
   "instructions": {
     "programs": {},
-    "allTokenCalls":true
+    "allTokenCalls": true
   },
   "transactions": {
     "programs": {
@@ -28,5 +27,6 @@
       "11111111111111111111111111111111": "defi"
     },
     "pubkeys": {}
-  }
+  },
+  "datumProgramInclusions": {}
 }
