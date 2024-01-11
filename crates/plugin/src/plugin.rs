@@ -545,6 +545,21 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             Ok(())
                         });
                     },
+                    ReplicaBlockInfoVersions::V0_0_3(bi) => {
+                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                            blockhash: String::from(bi.blockhash),
+                            slot: bi.slot,
+                            block_time: bi.block_time.unwrap_or_default(),
+                            block_height: bi.block_height.unwrap_or_default(),
+                        });
+
+                        this.spawn(|this| async move {
+                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.metrics.sends.log(1);
+
+                            Ok(())
+                        })
+                    },
                 }
                 Ok(())
             },
