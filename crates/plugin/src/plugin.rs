@@ -3,7 +3,6 @@ use std::{
     sync::{mpsc, Arc},
 };
 
-use anyhow::Context;
 use hashbrown::HashSet;
 use indexer_rabbitmq::geyser::{
     BlockMetadataNotify, InstructionNotify, Message, SlotStatusNotify, TransactionNotify,
@@ -18,7 +17,6 @@ use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
 use solana_sdk::transaction::SanitizedTransaction;
 
-use serde::Deserialize;
 use solana_transaction_status::{
     ConfirmedTransactionWithStatusMeta, TransactionStatusMeta, TransactionWithStatusMeta,
     UiTransactionEncoding, VersionedTransactionWithStatusMeta,
@@ -77,32 +75,9 @@ impl Inner {
 #[repr(transparent)]
 pub struct GeyserPluginRabbitMq(Option<Arc<Inner>>);
 
-#[derive(Deserialize)]
-struct TokenItem {
-    address: String,
-}
-
-#[derive(Deserialize)]
-struct TokenList {
-    tokens: Vec<TokenItem>,
-}
-
 impl GeyserPluginRabbitMq {
-    const TOKEN_REG_URL: &'static str = "https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json";
-
-    async fn load_token_reg() -> anyhow::Result<HashSet<Pubkey>> {
-        let res: TokenList = reqwest::get(Self::TOKEN_REG_URL)
-            .await
-            .context("HTTP request failed")?
-            .json()
-            .await
-            .context("Failed to parse response JSON")?;
-
-        res.tokens
-            .into_iter()
-            .map(|TokenItem { address }| address.parse())
-            .collect::<StdResult<_, _>>()
-            .context("Failed to convert token list")
+    fn load_token_reg() -> HashSet<Pubkey> {
+        HashSet::new()
     }
 
     fn expect_inner(&self) -> &Arc<Inner> {
@@ -206,11 +181,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             .map_err(custom_err(&metrics.errs))?;
 
             if acct_sel.screen_tokens() {
-                acct_sel.init_tokens(
-                    Self::load_token_reg()
-                        .await
-                        .map_err(custom_err(&metrics.errs))?,
-                );
+                acct_sel.init_tokens(Self::load_token_reg());
             }
 
             Result::<_>::Ok(producer)
@@ -567,6 +538,21 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_time: bi.block_time.unwrap_or_default(),
                             block_height: bi.block_height.unwrap_or_default(),
                         });
+                        this.spawn(|this| async move {
+                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.metrics.sends.log(1);
+
+                            Ok(())
+                        });
+                    },
+                    ReplicaBlockInfoVersions::V0_0_3(bi) => {
+                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                            blockhash: String::from(bi.blockhash),
+                            slot: bi.slot,
+                            block_time: bi.block_time.unwrap_or_default(),
+                            block_height: bi.block_height.unwrap_or_default(),
+                        });
+
                         this.spawn(|this| async move {
                             this.producer.send(msg, "multi.chain.block_meta").await;
                             this.metrics.sends.log(1);
