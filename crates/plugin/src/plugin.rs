@@ -558,7 +558,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             this.metrics.sends.log(1);
 
                             Ok(())
-                        })
+                        });
                     },
                 }
                 Ok(())

@@ -180,7 +180,7 @@ mod tests {
     fn validate_config(path: PathBuf) -> Result<()> {
         let file = fs::read(path)?;
         let json = serde_json::from_slice::<Config>(&file)?;
-        for (key, _) in json.datum_program_inclusions.unwrap_or_default().iter() {
+        for (key, _) in &json.datum_program_inclusions.unwrap_or_default() {
             key.parse::<Pubkey>()?;
         }
         Ok(())
