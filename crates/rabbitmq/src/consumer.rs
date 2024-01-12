@@ -56,7 +56,7 @@ where
             // chan,
             consumer,
             // ty,
-            _p: PhantomData::default(),
+            _p: PhantomData,
         })
     }
 

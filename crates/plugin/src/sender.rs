@@ -103,7 +103,9 @@ impl Sender {
         }
 
         metrics.reconnects.log(1);
-        let Ok(p) = self.connect(prod).await.map_err(log_err(&metrics.errs)) else { return };
+        let Ok(p) = self.connect(prod).await.map_err(log_err(&metrics.errs)) else {
+            return;
+        };
 
         match p
             .write(&msg, Some(route))
