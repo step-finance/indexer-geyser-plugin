@@ -102,7 +102,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         "GeyserPluginRabbitMq"
     }
 
-    fn on_load(&mut self, cfg: &str) -> Result<()> {
+    fn on_load(&mut self, cfg: &str, _is_reload: bool) -> Result<()> {
         solana_logger::setup_with_default("info");
 
         info!("Plugin loading");
