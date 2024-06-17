@@ -29,11 +29,13 @@ pub(crate) struct StatsRequest {
 pub(crate) struct Stats {
     ///a quick shortcut into the slot_stats buffer for most recent slot
     ///this should allow a hot path of code execution
+    #[allow(clippy::struct_field_names)]
     most_recent_slot_stats: (u64, usize),
     ///the buffer of slot stats; slots stats are sent to rabbitmq after they
     ///reach the size of the buffer. Thus, it's important to have the buffer large
     ///enough to catch trailing transactions, but small enough to send before
     ///the block is confirmed (so confirmooor can send it upon confirmation)
+    #[allow(clippy::struct_field_names)]
     slot_stats: [SlotStatistics; SLOT_BUFFER_SIZE],
     ///the rabbitmq sender
     producer: Arc<Sender>,

@@ -15,8 +15,8 @@ pub(crate) use solana_geyser_plugin_interface::geyser_plugin_interface as interf
 pub(crate) mod prelude {
     pub use std::result::Result as StdResult;
 
-    pub use anyhow::{anyhow, bail, Context, Error};
-    pub use log::{debug, error, info, trace, warn};
+    pub use anyhow::{anyhow, Context, Error};
+    pub use log::{info, warn};
     pub use solana_program::pubkey::Pubkey;
 
     pub type Result<T, E = Error> = StdResult<T, E>;
