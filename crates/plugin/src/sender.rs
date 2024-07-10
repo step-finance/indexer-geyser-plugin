@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, thread, time::Duration};
 
 use indexer_rabbitmq::{
     geyser::{CommittmentLevel, Message, Producer, QueueType, StartupType},
@@ -44,41 +44,76 @@ impl Sender {
         name: impl Into<indexer_rabbitmq::lapin::types::LongString>,
         startup_type: StartupType,
     ) -> Result<Producer, indexer_rabbitmq::Error> {
-        let conn = Connection::connect(
-            &amqp.address,
-            ConnectionProperties::default()
-                .with_connection_name(name.into())
-                .with_executor(tokio_executor_trait::Tokio::current())
-                .with_reactor(tokio_reactor_trait::Tokio),
-        )
-        .await?;
+        let amqp_name = name.into();
+        let mut tries = 0;
+        let producer = loop {
+            let delay = Self::get_retry_delay(tries);
+            thread::sleep(Duration::from_millis(delay));
+            tries += 1;
 
-        Producer::new(
-            &conn,
-            QueueType::new(
-                amqp.network,
-                startup_type,
-                &Suffix::ProductionUnchecked,
-                &Suffix::ProductionUnchecked,
-                CommittmentLevel::Processed,
-                "unused".to_string(),
-            )?,
-        )
-        .await
+            let Ok(conn) = Connection::connect(
+                &amqp.address,
+                ConnectionProperties::default()
+                    .with_connection_name(amqp_name.clone())
+                    .with_executor(tokio_executor_trait::Tokio::current())
+                    .with_reactor(tokio_reactor_trait::Tokio),
+            )
+            .await
+            else {
+                continue;
+            };
+
+            let Ok(prod) = Producer::new(
+                &conn,
+                QueueType::new(
+                    amqp.network,
+                    startup_type,
+                    &Suffix::ProductionUnchecked,
+                    &Suffix::ProductionUnchecked,
+                    CommittmentLevel::Processed,
+                    "unused".to_string(),
+                )?,
+            )
+            .await
+            else {
+                continue;
+            };
+
+            break prod;
+        };
+
+        Ok(producer)
     }
 
     async fn connect<'a>(
         &'a self,
-        prod: RwLockReadGuard<'a, Producer>,
     ) -> Result<RwLockReadGuard<'a, Producer>, indexer_rabbitmq::Error> {
-        // Anti-deadlock safeguard - force the current reader to hand us their
-        // lock so we can make sure it's destroyed.
-        std::mem::drop(prod);
-        let mut prod = self.producer.write().await;
+        let mut producer = self.producer.write().await;
 
-        *prod = Self::create_producer(&self.amqp, self.name.as_str(), self.startup_type).await?;
+        if producer.chan.status().connected() {
+            // This thread was in line for a write,
+            // but another thread has already handled the reconnection.
+            //
+            // Downgrade to a read so we can retry to send our msg.
+            let read_lock = producer.downgrade();
+            return Ok(read_lock);
+        }
 
-        Ok(prod.downgrade())
+        log::info!("Reconnecting to AMQP server...");
+
+        // This thread now has the write lock,
+        // all others should begin waiting for a read.
+        // Either through a `send` call, or the `downgrade` check above.
+
+        // Reconnect to AMQP server
+        *producer =
+            Self::create_producer(&self.amqp, self.name.as_str(), self.startup_type).await?;
+
+        // Release the write lock, by downgrading, and handing a read lock to the original caller,
+        // so they can send their message
+        let producer = producer.downgrade();
+
+        Ok(producer)
     }
 
     pub async fn send(&self, msg: Message, route: &str) {
@@ -91,28 +126,42 @@ impl Sender {
         }
 
         let metrics = &self.metrics;
+        // If we're in the middle of a reconnect, we'll be waiting here,
+        // until we can get a read lock, which is what we want.
         let prod = self.producer.read().await;
 
         if prod
             .write(&msg, Some(route))
             .await
             .map_err(log_err(&metrics.errs))
-            .is_ok()
+            .is_err()
         {
-            return;
-        }
+            // Drop the read lock. This thread is going to attempt to "promote" itself,
+            // and try to get a write lock to reconnect.
+            // 
+            // This will also help allow a writer to grab the Producer if one's waiting
+            std::mem::drop(prod);
 
-        metrics.reconnects.log(1);
-        let Ok(p) = self.connect(prod).await.map_err(log_err(&metrics.errs)) else {
-            return;
-        };
+            loop {
+                let Ok(new_prod) = self.connect().await.map_err(log_err(&metrics.errs)) else {
+                    continue;
+                };
 
-        match p
-            .write(&msg, Some(route))
-            .await
-            .map_err(log_err(&metrics.errs))
-        {
-            Ok(()) | Err(()) => (), // Type-level assertion that we consumed the error
+                if new_prod
+                    .write(&msg, Some(route))
+                    .await
+                    .map_err(log_err(&metrics.errs))
+                    .is_ok()
+                {
+                    // All is well. Unravel this madness
+                    break;
+                }
+            }
         }
+    }
+
+    // Linear backoff maxxing out at 1000ms
+    fn get_retry_delay(tries: usize) -> u64 {
+        (tries * 100).min(1000) as u64
     }
 }

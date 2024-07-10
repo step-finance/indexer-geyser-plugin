@@ -7,7 +7,7 @@
     missing_debug_implementations,
     missing_copy_implementations
 )]
-#![warn(clippy::pedantic, clippy::cargo, missing_docs)]
+#![warn(clippy::pedantic, clippy::cargo)]
 
 pub extern crate lapin;
 
