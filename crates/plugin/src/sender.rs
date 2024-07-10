@@ -85,9 +85,7 @@ impl Sender {
         Ok(producer)
     }
 
-    async fn connect<'a>(
-        &'a self,
-    ) -> Result<RwLockReadGuard<'a, Producer>, indexer_rabbitmq::Error> {
+    async fn connect(&self) -> Result<RwLockReadGuard<Producer>, indexer_rabbitmq::Error> {
         let mut producer = self.producer.write().await;
 
         if producer.chan.status().connected() {
@@ -108,6 +106,8 @@ impl Sender {
         // Reconnect to AMQP server
         *producer =
             Self::create_producer(&self.amqp, self.name.as_str(), self.startup_type).await?;
+
+        log::info!("Reconnected to AMQP server!");
 
         // Release the write lock, by downgrading, and handing a read lock to the original caller,
         // so they can send their message
@@ -138,7 +138,7 @@ impl Sender {
         {
             // Drop the read lock. This thread is going to attempt to "promote" itself,
             // and try to get a write lock to reconnect.
-            // 
+            //
             // This will also help allow a writer to grab the Producer if one's waiting
             std::mem::drop(prod);
 
