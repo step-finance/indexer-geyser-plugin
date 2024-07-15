@@ -1,0 +1,24 @@
+services:
+  geyser-plugin:
+    build: .
+    ports:
+      - 8899:8899
+      - 8900:8900
+    volumes:
+      - ./crates/plugin/compose_config.json:/geyser/compose_config.json
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RUST_LOG=warn
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics -q check_port_connectivity 
+      interval: 2s
+      timeout: 15s
+      retries: 5
