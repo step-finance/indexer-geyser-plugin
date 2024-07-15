@@ -74,4 +74,8 @@ where
 
         Ok(())
     }
+
+    pub fn is_connected(&self) -> bool {
+        self.chan.status().connected()
+    }
 }
