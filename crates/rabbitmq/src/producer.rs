@@ -12,7 +12,7 @@ use crate::serialize::serialize;
 /// A producer consisting of a configured channel and additional queue config
 #[derive(Debug)]
 pub struct Producer<Q> {
-    pub chan: Channel,
+    chan: Channel,
     ty: Q,
 }
 
@@ -73,5 +73,9 @@ where
             .await?;
 
         Ok(())
+    }
+
+    pub fn is_connected(&self) -> bool {
+        self.chan.status().connected()
     }
 }

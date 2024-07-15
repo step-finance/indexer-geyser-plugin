@@ -88,7 +88,7 @@ impl Sender {
     async fn connect(&self) -> Result<RwLockReadGuard<Producer>, indexer_rabbitmq::Error> {
         let mut producer = self.producer.write().await;
 
-        if producer.chan.status().connected() {
+        if producer.is_connected() {
             // This thread was in line for a write,
             // but another thread has already handled the reconnection.
             //
