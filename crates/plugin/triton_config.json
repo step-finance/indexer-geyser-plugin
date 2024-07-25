@@ -53,7 +53,8 @@
           "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo": "defi",
           "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK": "defi",
           "opnb2LAfJYbRMAHHvqjCwQxanZn7ReEHp1k81EohpZb": "defi",
-          "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA": "defi"
+          "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA": "defi",
+          "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY": "defi"
       },
       "pubkeys": {}
   },
@@ -131,6 +132,9 @@
         "post": true
     },
     "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA": {
+        "post": true
+    },
+    "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY": {
         "post": true
     }
   }
