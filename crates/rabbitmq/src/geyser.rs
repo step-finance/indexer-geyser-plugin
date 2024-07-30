@@ -354,6 +354,7 @@ pub enum QueueKind {
 }
 
 impl QueueKind {
+    #[must_use]
     pub const fn routing_key(&self) -> &str {
         match self {
             QueueKind::Transaction => "#.transaction",
@@ -362,6 +363,7 @@ impl QueueKind {
         }
     }
 
+    #[must_use]
     pub const fn suffix(&self) -> &str {
         match self {
             QueueKind::All => "",
@@ -456,6 +458,7 @@ impl QueueType {
         })
     }
 
+    #[must_use]
     pub fn exchange(&self) -> &str {
         &self.props.exchange
     }

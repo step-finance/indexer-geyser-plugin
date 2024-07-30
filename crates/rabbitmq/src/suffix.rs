@@ -1,6 +1,6 @@
 //! Support logic for configuring queues with suffixed names
 
-use std::{fmt::Write};
+use std::fmt::Write;
 
 use clap::{Arg, ArgMatches, Command};
 
