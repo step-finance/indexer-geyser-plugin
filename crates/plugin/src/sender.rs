@@ -1,4 +1,4 @@
-use std::{sync::Arc, thread, time::Duration};
+use std::{sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
 
 use indexer_rabbitmq::{
     geyser::{CommittmentLevel, Message, Producer, QueueType, StartupType},
@@ -19,6 +19,7 @@ pub struct Sender {
     startup_type: StartupType,
     producer: RwLock<Producer>,
     metrics: Arc<Metrics>,
+    stop_signal: AtomicBool,
 }
 
 impl Sender {
@@ -35,8 +36,19 @@ impl Sender {
             name,
             startup_type,
             producer: RwLock::new(producer),
-            metrics,
+            metrics, 
+            stop_signal: AtomicBool::new(false),
         })
+    }
+
+    #[inline]
+    pub fn stop(&self) {
+        self.stop_signal.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    #[inline]
+    pub fn is_stopped(&self) -> bool {
+        self.stop_signal.load(std::sync::atomic::Ordering::Relaxed)
     }
 
     async fn create_producer(
@@ -86,6 +98,11 @@ impl Sender {
     }
 
     async fn connect(&self) -> Result<RwLockReadGuard<Producer>, indexer_rabbitmq::Error> {
+        
+        if self.is_stopped() {
+            return Err(indexer_rabbitmq::Error::Other("Sender is stopped"));
+        }
+
         let mut producer = self.producer.write().await;
 
         if producer.is_connected() {
@@ -125,6 +142,12 @@ impl Sender {
             }
         }
 
+        //check for stop signal
+        if self.is_stopped() {
+            log::error!("Sender is stopped. Not sending message.");
+            return;
+        }
+
         let metrics = &self.metrics;
         // If we're in the middle of a reconnect, we'll be waiting here,
         // until we can get a read lock, which is what we want.
@@ -143,6 +166,12 @@ impl Sender {
             std::mem::drop(prod);
 
             loop {
+                //check for stop signal in this restart loop
+                if self.is_stopped() {
+                    log::info!("Sender is stopped. Not sending message (inner).");
+                    return;
+                }
+
                 let Ok(new_prod) = self.connect().await.map_err(log_err(&metrics.errs)) else {
                     continue;
                 };
