@@ -345,6 +345,32 @@ pub enum Network {
     Testnet,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
+#[strum(serialize_all = "kebab-case")]
+pub enum QueueKind {
+    Transaction,
+    ChainData,
+    All,
+}
+
+impl QueueKind {
+    pub const fn routing_key(&self) -> &str {
+        match self {
+            QueueKind::Transaction => "#.transaction",
+            QueueKind::ChainData => "multi.chain.#",
+            QueueKind::All => "#",
+        }
+    }
+
+    pub const fn suffix(&self) -> &str {
+        match self {
+            QueueKind::All => "",
+            QueueKind::ChainData => ".chain",
+            QueueKind::Transaction => ".txn",
+        }
+    }
+}
+
 /// Startup message hint for declaring exchanges and queues
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
 #[strum(serialize_all = "kebab-case")]
@@ -393,7 +419,7 @@ impl QueueType {
         exchange_suffix: &Suffix,
         queue_suffix: &Suffix,
         confirm_level: CommittmentLevel,
-        routing_key: String,
+        queue_kind: QueueKind,
     ) -> Result<Self> {
         let base_name = format!(
             "{}{}.{}.messages",
@@ -405,14 +431,15 @@ impl QueueType {
             },
             confirm_level,
         );
-        let exchange = exchange_suffix.format(base_name.clone())?;
-        let queue = queue_suffix.format(base_name)?;
+        let exchange = exchange_suffix.format(base_name.clone(), QueueKind::All)?;
+        let queue = queue_suffix.format(base_name, queue_kind)?;
+        let routing_key = queue_kind.routing_key();
 
         Ok(Self {
             props: QueueProps {
                 exchange,
                 queue,
-                binding: Binding::Topic(routing_key),
+                binding: Binding::Topic(routing_key.into()),
                 prefetch: 32_768,
                 max_len_bytes: if queue_suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
@@ -427,6 +454,10 @@ impl QueueType {
                 }),
             },
         })
+    }
+
+    pub fn exchange(&self) -> &str {
+        &self.props.exchange
     }
 }
 
