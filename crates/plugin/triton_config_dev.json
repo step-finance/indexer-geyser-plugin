@@ -1,16 +1,7 @@
 {
-  "accounts": {
-      "owners": {},
-      "pubkeys": {},
-      "startup": false
-  },
   "amqp": {
       "address": "amqps://",
       "network": "mainnet"
-  },
-  "instructions": {
-      "allTokenCalls": true,
-      "programs": {}
   },
   "jobs": {
       "limit": 16
