@@ -57,24 +57,6 @@ pub(crate) struct Inner {
 }
 
 impl Inner {
-    pub fn shutdown(mut self) {
-        while Arc::strong_count(&self.rt) > 1 {
-            log::warn!("Waiting for all runtime references to drop");
-            std::thread::sleep(std::time::Duration::from_secs(1));
-        }
-        let rt = loop {
-            match Arc::try_unwrap(self.rt) {
-                Ok(rt) => break rt,
-                Err(arc) => {
-                    self.rt = arc;
-                }
-            }
-            log::warn!("Still waiting for all references to drop");
-            std::thread::sleep(std::time::Duration::from_secs(1));
-        };
-        rt.shutdown_background();
-    }
-
     pub fn spawn<F: std::future::Future<Output = anyhow::Result<()>> + Send + 'static>(
         self: &Arc<Self>,
         f: impl FnOnce(Arc<Self>) -> F,
@@ -218,18 +200,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             return;
         };
         log::info!("Shutting down plugin");
-        self.with_inner(|| GeyserPluginError::Custom("shutdown".into()),
-            |this| {
-                log::info!("Shutting down producer");
-                this.producer.stop();
-                log::info!("Shut down producer");
-                Ok(())
-            })
-            .unwrap_or_else(|e|log::error!("Failed to stop producer: {:?}", e));
+        inner.producer.stop();
         log::info!("Signaled producer to stop");
         //loop trying to unwrap the inner until it's the last reference
         let inner = loop {
-            log::info!("Waiting for all references to inner to drop");
+            let ref_count = Arc::strong_count(&inner);
+            log::info!("Waiting for all references to inner to drop ({} remaining)", ref_count);
             match Arc::try_unwrap(inner) {
                 Ok(inner) => break inner,
                 Err(arc) => {
@@ -239,8 +215,20 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             std::thread::sleep(std::time::Duration::from_millis(100));
         };
         log::info!("All references to inner dropped, shutting down runtime");
+        let Inner{ mut rt, .. } = inner;
+        let rt = loop {
+            let ref_count = Arc::strong_count(&rt);
+            log::info!("Waiting for all references to runtime to drop ({} remaining)", ref_count);
+            match Arc::try_unwrap(rt) {
+                Ok(inner) => break inner,
+                Err(arc) => {
+                    rt = arc;
+                }
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        };
         //shutdown the runtime
-        inner.shutdown();
+        rt.shutdown_background();
         log::info!("Plugin unloaded");
     }
 
