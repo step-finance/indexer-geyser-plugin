@@ -291,11 +291,17 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             })
                             .collect()
                     });
+
+                    let owner_keys = meta
+                        .owners
+                        .as_ref()
+                        .map(|o| o.iter().map(|ko| ko.map(|k| Pubkey::from(k))).collect());
                     let meta = TransactionStatusMeta {
                         status: meta.status.clone(),
                         fee: meta.fee,
                         pre_balances: meta.pre_balances.clone(),
                         post_balances: meta.post_balances.clone(),
+                        owners: owner_keys,
                         pre_datum: pre_datum_compressed,
                         post_datum: post_datum_compressed,
                         inner_instructions: meta.inner_instructions.clone(),
