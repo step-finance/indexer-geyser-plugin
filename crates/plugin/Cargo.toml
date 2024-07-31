@@ -61,7 +61,6 @@ features = [
   "rt-multi-thread",
   "sync",
   "time",
-  "macros",
 ]
 
 [dependencies.indexer-rabbitmq]
