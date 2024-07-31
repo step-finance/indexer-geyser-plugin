@@ -15,6 +15,8 @@ use crate::{
 pub struct TransactionSelector {
     programs: HashMap<Pubkey, Arc<String>>,
     pubkeys: HashMap<Pubkey, Arc<String>>,
+    /// K = routing prefix, V = allows all?
+    allows_all: HashMap<String, bool>,
     multi_routing_key: Arc<String>,
 }
 
@@ -24,12 +26,12 @@ impl TransactionSelector {
 
         let programs = programs
             .into_iter()
-            .map(|s| {
+            .filter_map(|s| {
                 s.0.parse()
                     .map(|a| (a, Arc::new(format!("{}.transaction", s.1))))
+                    .ok()
             })
-            .collect::<Result<_, _>>()
-            .context("Failed to parse tx program keys")?;
+            .collect::<_>();
 
         let pubkeys = pubkeys
             .into_iter()
