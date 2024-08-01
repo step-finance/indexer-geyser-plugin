@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::sync::{mpsc, Arc};
+use std::time::Duration;
 
 use crate::prelude::*;
 use indexer_rabbitmq::geyser::{Message, SlotStatistics};
@@ -62,14 +63,31 @@ impl Stats {
                     .collect::<Vec<SlotStatistics>>()
                     .try_into()
                     .unwrap(),
-                producer,
+                producer: producer.clone(),
                 rt,
                 token_programs: Self::get_token_programs(),
             };
             //the thread's endless loop of message processing
-            while let Ok(req) = rx.recv() {
-                stats.process(req.slot, &req.stx, &req.meta, req.is_vote, req.is_err);
+            let d = Duration::from_secs(1);
+            loop {
+                match rx.recv_timeout(d) {
+                    Ok(req) => {
+                        if producer.is_stopped() {
+                            break;
+                        }
+                        stats.process(req.slot, &req.stx, &req.meta, req.is_vote, req.is_err);
+                    },
+                    Err(mpsc::RecvTimeoutError::Timeout) => {
+                        if producer.is_stopped() {
+                            break;
+                        }
+                    },
+                    Err(mpsc::RecvTimeoutError::Disconnected) => {
+                        break;
+                    },
+                }
             }
+            log::warn!("stats thread stopping");
         });
         //return the channel sender for the geyser thread to send messages to
         tx

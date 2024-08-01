@@ -36,6 +36,9 @@ pub enum Error {
     /// An error occurred related to a queue's configuration
     #[error("Invalid queue type for operation: {0}")]
     InvalidQueueType(&'static str),
+    /// Some error happened
+    #[error("Custom error: {0}")]
+    Other(&'static str),
 }
 
 #[allow(dead_code)]

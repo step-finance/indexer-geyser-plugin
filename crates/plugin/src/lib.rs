@@ -23,7 +23,6 @@ pub(crate) mod prelude {
 }
 
 pub(crate) mod config;
-pub(crate) mod convert;
 pub(crate) mod metrics;
 mod plugin;
 pub(crate) mod selectors;
