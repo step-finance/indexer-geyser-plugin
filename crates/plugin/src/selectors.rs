@@ -60,7 +60,7 @@ impl TransactionSelector {
 
     #[inline]
     fn make_routing_key(s: &str) -> Arc<String> {
-        Arc::new(format!("{}.transaction", s))
+        Arc::new(format!("{s}.transaction"))
     }
 
     #[inline]
