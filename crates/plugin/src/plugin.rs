@@ -3,14 +3,12 @@ use std::{
     sync::{mpsc, Arc},
 };
 
-use hashbrown::HashSet;
 use indexer_rabbitmq::geyser::{
-    BlockMetadataNotify, InstructionNotify, Message, SlotStatusNotify, TransactionNotify,
+    BlockMetadataNotify, Message, SlotStatusNotify, StartupType, TransactionNotify,
 };
 use solana_geyser_plugin_interface::geyser_plugin_interface::{
-    ReplicaAccountInfoV2, ReplicaAccountInfoV3, ReplicaBlockInfoVersions, SlotStatus,
+    ReplicaBlockInfoVersions, SlotStatus,
 };
-use solana_program::{instruction::CompiledInstruction, message::AccountKeys};
 
 // pub(crate) static TOKEN_KEY: Pubkey =
 //     solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
@@ -24,14 +22,10 @@ use solana_transaction_status::{
 
 use crate::{
     config::{ChainProgress, Config},
-    convert,
-    interface::{
-        GeyserPlugin, GeyserPluginError, ReplicaAccountInfo, ReplicaAccountInfoVersions,
-        ReplicaTransactionInfoVersions, Result,
-    },
+    interface::{GeyserPlugin, GeyserPluginError, ReplicaTransactionInfoVersions, Result},
     metrics::{Counter, Metrics},
     prelude::*,
-    selectors::{AccountSelector, InstructionSelector, TransactionSelector},
+    selectors::TransactionSelector,
     sender::Sender,
     stats::{Stats, StatsRequest},
 };
@@ -53,8 +47,6 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 pub(crate) struct Inner {
     rt: Arc<tokio::runtime::Runtime>,
     producer: Arc<Sender>,
-    acct_sel: AccountSelector,
-    ins_sel: InstructionSelector,
     tx_sel: TransactionSelector,
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
@@ -76,10 +68,6 @@ impl Inner {
 pub struct GeyserPluginRabbitMq(Option<Arc<Inner>>);
 
 impl GeyserPluginRabbitMq {
-    fn load_token_reg() -> HashSet<Pubkey> {
-        HashSet::new()
-    }
-
     fn expect_inner(&self) -> &Arc<Inner> {
         self.0.as_ref().expect(UNINIT)
     }
@@ -144,12 +132,9 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 .map_err(custom_err(&metrics.errs))?;
         }
 
-        let (amqp, jobs, metrics_conf, chain_progress, mut acct_sel, ins_sel, tx_sel) =
-            Config::read(cfg)
-                .and_then(Config::into_parts)
-                .map_err(custom_err(&metrics.errs))?;
-
-        let startup_type = acct_sel.startup();
+        let (amqp, jobs, metrics_conf, chain_progress, tx_sel) = Config::read(cfg)
+            .and_then(Config::into_parts)
+            .map_err(custom_err(&metrics.errs))?;
 
         if let Some(config) = metrics_conf.config {
             const VAR: &str = "SOLANA_METRICS_CONFIG";
@@ -174,15 +159,11 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             let producer = Sender::new(
                 amqp,
                 format!("geyser-rabbitmq-{version}@{host}"),
-                startup_type,
+                StartupType::Normal,
                 Arc::clone(&metrics),
             )
             .await
             .map_err(custom_err(&metrics.errs))?;
-
-            if acct_sel.screen_tokens() {
-                acct_sel.init_tokens(Self::load_token_reg());
-            }
 
             Result::<_>::Ok(producer)
         })?;
@@ -194,8 +175,6 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         self.0 = Some(Arc::new(Inner {
             rt,
             producer,
-            acct_sel,
-            ins_sel,
             tx_sel,
             metrics,
             chain_progress,
@@ -207,45 +186,51 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         Ok(())
     }
 
-    fn update_account(
-        &self,
-        account: ReplicaAccountInfoVersions,
-        slot: u64,
-        is_startup: bool,
-    ) -> Result<()> {
-        self.with_inner(
-            || GeyserPluginError::AccountsUpdateError { msg: UNINIT.into() },
-            |this| {
-                let (pubkey, owner) = match account {
-                    ReplicaAccountInfoVersions::V0_0_1(acct) => {
-                        let ReplicaAccountInfo { pubkey, owner, .. } = *acct;
-                        (pubkey, owner)
-                    },
-                    ReplicaAccountInfoVersions::V0_0_2(acct) => {
-                        let ReplicaAccountInfoV2 { pubkey, owner, .. } = *acct;
-                        (pubkey, owner)
-                    },
-                    ReplicaAccountInfoVersions::V0_0_3(acct) => {
-                        let ReplicaAccountInfoV3 { pubkey, owner, .. } = *acct;
-                        (pubkey, owner)
-                    },
-                };
-
-                if let Some(route) = this.acct_sel.get_route(owner, pubkey, is_startup) {
-                    let acct = convert::create_account_update(&account, slot, is_startup);
-                    let route = route.clone();
-                    this.spawn(|this| async move {
-                        this.producer
-                            .send(Message::AccountUpdate(acct), route.as_str())
-                            .await;
-                        this.metrics.sends.log(1);
-                        Ok(())
-                    });
-                }
-
-                Ok(())
-            },
-        )
+    /// The callback called right before a plugin is unloaded by the system
+    /// Used for doing cleanup before unload.
+    fn on_unload(&mut self) {
+        log::info!("Plugin unloading");
+        let Some(mut inner) = self.0.take() else {
+            log::warn!("Plugin already unloaded");
+            return;
+        };
+        log::info!("Shutting down plugin");
+        inner.producer.stop();
+        log::info!("Signaled producer to stop");
+        //loop trying to unwrap the inner until it's the last reference
+        let inner = loop {
+            let ref_count = Arc::strong_count(&inner);
+            log::info!(
+                "Waiting for all references to inner to drop ({} remaining)",
+                ref_count
+            );
+            match Arc::try_unwrap(inner) {
+                Ok(inner) => break inner,
+                Err(arc) => {
+                    inner = arc;
+                },
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        };
+        log::info!("All references to inner dropped, shutting down runtime");
+        let Inner { mut rt, .. } = inner;
+        let rt = loop {
+            let ref_count = Arc::strong_count(&rt);
+            log::info!(
+                "Waiting for all references to runtime to drop ({} remaining)",
+                ref_count
+            );
+            match Arc::try_unwrap(rt) {
+                Ok(inner) => break inner,
+                Err(arc) => {
+                    rt = arc;
+                },
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        };
+        //shutdown the runtime
+        rt.shutdown_background();
+        log::info!("Plugin unloaded");
     }
 
     #[allow(clippy::too_many_lines)]
@@ -254,47 +239,6 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         transaction: ReplicaTransactionInfoVersions,
         slot: u64,
     ) -> Result<()> {
-        #[inline]
-        fn process_instruction<'a>(
-            sel: &'a InstructionSelector,
-            ins: &CompiledInstruction,
-            keys: &AccountKeys,
-            slot: u64,
-        ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
-            let program = *keys
-                .get(ins.program_id_index as usize)
-                .ok_or_else(|| anyhow!("Couldn't get program ID for instruction"))?;
-
-            match sel.get_route(&program, ins) {
-                None => Ok(None),
-                Some(route) => {
-                    let accounts = ins
-                        .accounts
-                        .iter()
-                        .map(|i| {
-                            keys.get(*i as usize).map_or_else(
-                                || Err(anyhow!("Couldn't get input account for instruction")),
-                                |k| Ok(*k),
-                            )
-                        })
-                        .collect::<StdResult<Vec<_>, _>>()?;
-
-                    let data = ins.data.clone();
-
-                    Ok(Some((
-                        Message::InstructionNotify(InstructionNotify {
-                            program,
-                            data,
-                            accounts,
-                            slot,
-                            block_time: None,
-                        }),
-                        route,
-                    )))
-                },
-            }
-        }
-
         #[inline]
         fn process_transaction<'a>(
             sel: &'a TransactionSelector,
@@ -380,7 +324,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         self.with_inner(
             || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
             |this| {
-                if this.ins_sel.is_empty() && this.tx_sel.is_empty() {
+                if this.tx_sel.is_empty() {
                     return Ok(());
                 }
 
@@ -437,41 +381,6 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             warn!("Error processing transaction: {:?}", e);
                             this.metrics.errs.log(1);
                         },
-                    }
-                }
-
-                //handle ix matches
-                if !this.ins_sel.is_empty() {
-                    let msg = stx.message();
-                    let keys = msg.account_keys();
-
-                    //first check if any of the keys are in the instruction selector
-                    //this prevents blowing out the instruction list when not needed
-                    if keys.iter().any(|a| this.ins_sel.programs.contains_key(a)) {
-                        for ins in msg.instructions().iter().chain(
-                            meta.inner_instructions
-                                .iter()
-                                .flatten()
-                                .flat_map(|i| i.instructions.iter().map(|i| &i.instruction)),
-                        ) {
-                            match process_instruction(&this.ins_sel, ins, &keys, slot) {
-                                Ok(Some(m)) => {
-                                    let message = m.0;
-                                    let route = m.1.clone();
-                                    this.spawn(|this| async move {
-                                        this.producer.send(message, route.as_str()).await;
-                                        this.metrics.sends.log(1);
-
-                                        Ok(())
-                                    });
-                                },
-                                Ok(None) => (),
-                                Err(e) => {
-                                    warn!("Error processing instruction: {:?}", e);
-                                    this.metrics.errs.log(1);
-                                },
-                            }
-                        }
                     }
                 }
 
@@ -569,12 +478,11 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
     }
 
     fn account_data_notifications_enabled(&self) -> bool {
-        let this = self.expect_inner();
-        !this.acct_sel.is_empty()
+        false
     }
 
     fn transaction_notifications_enabled(&self) -> bool {
         let this = self.expect_inner();
-        !(this.ins_sel.is_empty() && this.tx_sel.is_empty())
+        !this.tx_sel.is_empty()
     }
 }

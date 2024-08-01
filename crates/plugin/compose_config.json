@@ -12,15 +12,6 @@
     "blockMeta": true,
     "slotStatus": true
   },
-  "accounts": {
-    "owners": {},
-    "pubkeys": {},
-    "startup": false
-  },
-  "instructions": {
-    "programs": {},
-    "allTokenCalls": true
-  },
   "transactions": {
     "programs": {
       "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "defi",
