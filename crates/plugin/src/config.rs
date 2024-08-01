@@ -2,10 +2,7 @@ use hashbrown::HashMap;
 use serde::Deserialize;
 use veil::Redact;
 
-use crate::{
-    prelude::*,
-    selectors::TransactionSelector,
-};
+use crate::{prelude::*, selectors::TransactionSelector};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -93,15 +90,7 @@ impl Config {
         Ok(cfg)
     }
 
-    pub fn into_parts(
-        self,
-    ) -> Result<(
-        Amqp,
-        Jobs,
-        Metrics,
-        ChainProgress,
-        TransactionSelector,
-    )> {
+    pub fn into_parts(self) -> Result<(Amqp, Jobs, Metrics, ChainProgress, TransactionSelector)> {
         let Self {
             amqp,
             jobs,

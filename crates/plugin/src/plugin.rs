@@ -4,7 +4,7 @@ use std::{
 };
 
 use indexer_rabbitmq::geyser::{
-    BlockMetadataNotify, Message, SlotStatusNotify, StartupType, TransactionNotify
+    BlockMetadataNotify, Message, SlotStatusNotify, StartupType, TransactionNotify,
 };
 use solana_geyser_plugin_interface::geyser_plugin_interface::{
     ReplicaBlockInfoVersions, SlotStatus,
@@ -22,10 +22,7 @@ use solana_transaction_status::{
 
 use crate::{
     config::{ChainProgress, Config},
-    interface::{
-        GeyserPlugin, GeyserPluginError,
-        ReplicaTransactionInfoVersions, Result,
-    },
+    interface::{GeyserPlugin, GeyserPluginError, ReplicaTransactionInfoVersions, Result},
     metrics::{Counter, Metrics},
     prelude::*,
     selectors::TransactionSelector,
@@ -71,7 +68,6 @@ impl Inner {
 pub struct GeyserPluginRabbitMq(Option<Arc<Inner>>);
 
 impl GeyserPluginRabbitMq {
-
     fn expect_inner(&self) -> &Arc<Inner> {
         self.0.as_ref().expect(UNINIT)
     }
@@ -136,10 +132,9 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 .map_err(custom_err(&metrics.errs))?;
         }
 
-        let (amqp, jobs, metrics_conf, chain_progress, tx_sel) =
-            Config::read(cfg)
-                .and_then(Config::into_parts)
-                .map_err(custom_err(&metrics.errs))?;
+        let (amqp, jobs, metrics_conf, chain_progress, tx_sel) = Config::read(cfg)
+            .and_then(Config::into_parts)
+            .map_err(custom_err(&metrics.errs))?;
 
         if let Some(config) = metrics_conf.config {
             const VAR: &str = "SOLANA_METRICS_CONFIG";
@@ -205,25 +200,31 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         //loop trying to unwrap the inner until it's the last reference
         let inner = loop {
             let ref_count = Arc::strong_count(&inner);
-            log::info!("Waiting for all references to inner to drop ({} remaining)", ref_count);
+            log::info!(
+                "Waiting for all references to inner to drop ({} remaining)",
+                ref_count
+            );
             match Arc::try_unwrap(inner) {
                 Ok(inner) => break inner,
                 Err(arc) => {
                     inner = arc;
-                }
+                },
             }
             std::thread::sleep(std::time::Duration::from_millis(100));
         };
         log::info!("All references to inner dropped, shutting down runtime");
-        let Inner{ mut rt, .. } = inner;
+        let Inner { mut rt, .. } = inner;
         let rt = loop {
             let ref_count = Arc::strong_count(&rt);
-            log::info!("Waiting for all references to runtime to drop ({} remaining)", ref_count);
+            log::info!(
+                "Waiting for all references to runtime to drop ({} remaining)",
+                ref_count
+            );
             match Arc::try_unwrap(rt) {
                 Ok(inner) => break inner,
                 Err(arc) => {
                     rt = arc;
-                }
+                },
             }
             std::thread::sleep(std::time::Duration::from_millis(100));
         };
@@ -238,7 +239,6 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         transaction: ReplicaTransactionInfoVersions,
         slot: u64,
     ) -> Result<()> {
-
         #[inline]
         fn process_transaction<'a>(
             sel: &'a TransactionSelector,

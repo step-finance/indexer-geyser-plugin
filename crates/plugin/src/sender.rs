@@ -1,4 +1,8 @@
-use std::{sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
+use std::{
+    sync::{atomic::AtomicBool, Arc},
+    thread,
+    time::Duration,
+};
 
 use indexer_rabbitmq::{
     geyser::{CommittmentLevel, Message, Producer, QueueType, StartupType},
@@ -36,14 +40,15 @@ impl Sender {
             name,
             startup_type,
             producer: RwLock::new(producer),
-            metrics, 
+            metrics,
             stop_signal: AtomicBool::new(false),
         })
     }
 
     #[inline]
     pub fn stop(&self) {
-        self.stop_signal.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.stop_signal
+            .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     #[inline]
@@ -98,7 +103,6 @@ impl Sender {
     }
 
     async fn connect(&self) -> Result<RwLockReadGuard<Producer>, indexer_rabbitmq::Error> {
-        
         if self.is_stopped() {
             return Err(indexer_rabbitmq::Error::Other("Sender is stopped"));
         }
