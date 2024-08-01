@@ -285,7 +285,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         fee: meta.fee,
                         pre_balances: meta.pre_balances.clone(),
                         post_balances: meta.post_balances.clone(),
-                        owners: meta.owners.clone(),
+                        post_owners: meta.post_owners.clone(),
                         pre_datum: pre_datum_compressed,
                         post_datum: post_datum_compressed,
                         inner_instructions: meta.inner_instructions.clone(),
