@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use hashbrown::HashMap;
 use itertools::Itertools;
-use solana_sdk::{pubkey, transaction::SanitizedTransaction};
+use solana_sdk::transaction::SanitizedTransaction;
 use solana_transaction_status::TransactionStatusMeta;
 
 use crate::{
@@ -21,8 +21,6 @@ pub struct TransactionSelector {
     allows_all_programs: Vec<Arc<String>>,
     multi_routing_key: Arc<String>,
 }
-
-pub const VOTING_PROGRAM: Pubkey = pubkey!("Vote111111111111111111111111111111111111111");
 
 impl TransactionSelector {
     pub fn from_config(config: Transactions) -> Result<Self> {
@@ -73,9 +71,7 @@ impl TransactionSelector {
         let msg = tx.message();
         let keys = msg.account_keys();
 
-        let contains_vote = keys.iter().any(|k| *k == VOTING_PROGRAM);
-
-        if contains_vote {
+        if tx.is_simple_vote_transaction() {
             return None;
         }
 
