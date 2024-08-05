@@ -17,7 +17,7 @@ pub struct TransactionSelector {
     programs: HashMap<Pubkey, Arc<String>>,
     /// K = Program, V = routing_key
     pubkeys: HashMap<Pubkey, Arc<String>>,
-    /// K = routing prefix, V = allows all programs?
+    /// Routing prefixes that support routing ALL programs
     allows_all_programs: Vec<Arc<String>>,
     multi_routing_key: Arc<String>,
 }
@@ -36,8 +36,9 @@ impl TransactionSelector {
 
         let programs = programs
             .into_iter()
-            .filter_map(|s| s.0.parse().map(|a| (a, Self::make_routing_key(&s.1))).ok())
-            .collect::<_>();
+            .map(|s| s.0.parse().map(|a| (a, Self::make_routing_key(&s.1))))
+            .collect::<Result<_, _>>()
+            .context("Failed to parse tx program keys")?;
 
         let pubkeys = pubkeys
             .into_iter()
