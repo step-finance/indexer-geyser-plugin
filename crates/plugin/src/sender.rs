@@ -5,7 +5,7 @@ use std::{
 };
 
 use indexer_rabbitmq::{
-    geyser::{CommittmentLevel, Message, Producer, QueueType, StartupType},
+    geyser::{CommittmentLevel, Message, Producer, QueueKind, QueueType, StartupType},
     lapin::{Connection, ConnectionProperties},
     suffix::Suffix,
 };
@@ -88,7 +88,7 @@ impl Sender {
                     &Suffix::ProductionUnchecked,
                     &Suffix::ProductionUnchecked,
                     CommittmentLevel::Processed,
-                    "unused".to_string(),
+                    QueueKind::All,
                 )?,
             )
             .await
