@@ -4,7 +4,7 @@ use std::fmt::Write;
 
 use clap::{Arg, ArgMatches, Command};
 
-use crate::{Error, Result};
+use crate::{geyser::QueueKind, Error, Result};
 
 /// A suffix for an AMQP object, to avoid name collisions with staging or debug
 /// builds
@@ -71,7 +71,10 @@ impl Suffix {
         matches!(self, Self::Debug(_))
     }
 
-    pub(crate) fn format(&self, mut prefix: String) -> Result<String> {
+    pub(crate) fn format(&self, mut prefix: String, queue_kind: QueueKind) -> Result<String> {
+        let queue_suffix = queue_kind.suffix();
+        prefix.push_str(queue_suffix);
+
         match self {
             Self::Production if cfg!(debug_assertions) => {
                 return Err(Error::InvalidQueueType(
