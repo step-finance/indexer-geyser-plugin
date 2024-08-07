@@ -68,7 +68,6 @@ impl TransactionSelector {
         tx: &SanitizedTransaction,
         meta: &TransactionStatusMeta,
     ) -> Option<&Arc<String>> {
-
         //we do not care about votes, for now.
         //technically this makes our sol balance
         //tracking for voting accounts incorrect
