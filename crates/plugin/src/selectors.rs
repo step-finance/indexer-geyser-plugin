@@ -68,12 +68,16 @@ impl TransactionSelector {
         tx: &SanitizedTransaction,
         meta: &TransactionStatusMeta,
     ) -> Option<&Arc<String>> {
-        let msg = tx.message();
-        let keys = msg.account_keys();
 
+        //we do not care about votes, for now.
+        //technically this makes our sol balance
+        //tracking for voting accounts incorrect
         if tx.is_simple_vote_transaction() {
             return None;
         }
+
+        let msg = tx.message();
+        let keys = msg.account_keys();
 
         let pubkey_routes = keys
             .iter()
