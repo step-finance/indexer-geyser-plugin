@@ -30,7 +30,7 @@ inherits = "release"
 [patch.crates-io]
 solana-transaction-status = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
 solana-sdk = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
-solana-geyser-plugin-interface = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
+solana-geyser-plugin-interface = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b", package = "agave-geyser-plugin-interface" }
 solana-logger = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
 solana-program = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
 solana-metrics = { git = 'https://github.com/step-finance/solana.git', rev = "de855b72d4e87fbf78bf68f8bd30b07be271fb8b" }
