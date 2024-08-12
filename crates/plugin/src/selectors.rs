@@ -34,9 +34,8 @@ impl TransactionSelector {
 
         let programs = programs
             .into_iter()
-            .map(|s| s.0.parse().map(|a| (a, Self::make_routing_key(&s.1))))
-            .collect::<Result<_, _>>()
-            .context("Failed to parse tx program keys")?;
+            .filter_map(|s| s.0.parse().map(|a| (a, Self::make_routing_key(&s.1))).ok())
+            .collect::<HashMap<_, _>>();
 
         let pubkeys = pubkeys
             .into_iter()
@@ -54,7 +53,7 @@ impl TransactionSelector {
 
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.programs.is_empty() && self.pubkeys.is_empty()
+        self.programs.is_empty() && self.pubkeys.is_empty() && self.allows_all_programs.is_empty()
     }
 
     #[inline]
