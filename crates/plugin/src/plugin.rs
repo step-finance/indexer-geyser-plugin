@@ -245,6 +245,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             stx: &SanitizedTransaction,
             meta: &TransactionStatusMeta,
             slot: u64,
+            index_in_block: usize,
         ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
             match sel.get_route(stx, meta) {
                 None => Ok(None),
@@ -309,7 +310,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         slot,
                         block_time: None,
                     };
-                    let encoded_tx = full_tx.encode(UiTransactionEncoding::JsonParsed, Some(0))?;
+
+                    let encoded_tx = full_tx.encode(
+                        UiTransactionEncoding::JsonParsed,
+                        Some(0),
+                        index_in_block,
+                    )?;
 
                     Ok(Some((
                         Message::TransactionNotify(Box::new(TransactionNotify {
@@ -333,17 +339,20 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 let stx: &SanitizedTransaction;
                 let meta: &TransactionStatusMeta;
                 let is_vote: bool;
+                let index_in_block: usize;
 
                 match transaction {
                     ReplicaTransactionInfoVersions::V0_0_1(tx) => {
                         stx = tx.transaction;
                         meta = tx.transaction_status_meta;
                         is_vote = tx.is_vote;
+                        index_in_block = 0;
                     },
                     ReplicaTransactionInfoVersions::V0_0_2(tx) => {
                         stx = tx.transaction;
                         meta = tx.transaction_status_meta;
                         is_vote = tx.is_vote;
+                        index_in_block = tx.index;
                     },
                 }
 
@@ -365,7 +374,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
                 //handle tx match
                 if !this.tx_sel.is_empty() {
-                    match process_transaction(&this.tx_sel, stx, meta, slot) {
+                    match process_transaction(&this.tx_sel, stx, meta, slot, index_in_block) {
                         Ok(Some(m)) => {
                             let message = m.0;
                             let route = m.1.clone();
