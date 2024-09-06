@@ -235,7 +235,7 @@ pub struct SlotStatistics {
     ///the blocktime of the slot
     /// this is not known for processing, but is later used in confirmooor
     pub block_time: Option<i64>,
-
+    pub slot_second_idx: Option<u8>,
     ///count of successful txs
     pub tx_success: u64,
     ///sum of the fees for successful txs
