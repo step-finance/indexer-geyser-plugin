@@ -28,11 +28,18 @@ inherits = "release"
 # strip = "symbols" # Not supported in the workspace toolchain version
 
 [patch.crates-io]
-solana-transaction-status = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-sdk = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-geyser-plugin-interface = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-logger = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-program = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-metrics = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
-solana-zk-token-sdk = { git = 'https://github.com/step-finance/solana.git', rev = "b57c8928e642162f9afff315ca73d6a1f45e56a1" }
+solana-transaction-status = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-sdk = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-geyser-plugin-interface = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-logger = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-program = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-metrics = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
+solana-zk-token-sdk = { git = 'https://github.com/step-finance/solana.git', rev = "393145e2aaf54123c9b6a4ef78e92f9cdf610b3f" }
 
+# solana-transaction-status = { path = "../solana/transaction-status" }
+# solana-sdk = { path = "../solana/sdk" }
+# solana-geyser-plugin-interface = { path = "../solana/geyser-plugin-interface" }
+# solana-logger = { path = "../solana/logger" }
+# solana-program = { path = "../solana/sdk/program" }
+# solana-metrics = { path = "../solana/metrics" }
+# solana-zk-token-sdk = { path = "../solana/zk-token-sdk" }
