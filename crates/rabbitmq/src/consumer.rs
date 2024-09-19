@@ -72,21 +72,11 @@ where
             None => return Ok(None),
         };
 
-        let mut data_cursor: std::io::Cursor<Vec<u8>> = std::io::Cursor::new(delivery.data);
-        let deser_result = deserialize(&mut data_cursor);
+        let data_cursor: std::io::Cursor<Vec<u8>> = std::io::Cursor::new(delivery.data);
+        let deser_result = deserialize(data_cursor);
         if deser_result.is_err() {
             delivery.acker.nack(BasicNackOptions::default()).await?;
-            if let Err(e) = data_cursor.seek(std::io::SeekFrom::Start(0)) {
-                log::error!(
-                    "Failed to rewind cursor during Failed to deserialize message: {}",
-                    e
-                );
-            }
-            log::error!(
-                "Failed to deserialize message: {:?}.  Message is {:?}",
-                deser_result,
-                String::from_utf8(data_cursor.into_inner()),
-            );
+            log::error!("FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {:?}.", deser_result);
         }
         deser_result
             .map_err(|_| Error::Other("error deser message"))
