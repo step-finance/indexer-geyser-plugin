@@ -1,14 +1,11 @@
 //! An AMQP consumer configured from a [`QueueType`]
 
-use std::{
-    io::Seek,
-    marker::PhantomData,
-};
+use std::{io::Seek, marker::PhantomData};
 
 use futures_util::StreamExt;
 use lapin::{acker::Acker, options::BasicNackOptions, Connection};
 
-use crate::{serialize::deserialize, QueueType, Result};
+use crate::{serialize::deserialize, Error, QueueType, Result};
 
 /// A consumer consisting of a configured AMQP consumer and queue config
 #[derive(Debug)]
@@ -44,6 +41,7 @@ pub struct ReadResult<Q: QueueType> {
 impl<Q: QueueType> Consumer<Q>
 where
     Q::Message: for<'a> serde::Deserialize<'a>,
+    Q::Message: std::fmt::Debug,
 {
     /// Construct a new consumer from a [`QueueType`]
     ///
@@ -75,25 +73,27 @@ where
         };
 
         let mut data_cursor: std::io::Cursor<Vec<u8>> = std::io::Cursor::new(delivery.data);
-        let data = deserialize(&mut data_cursor);
-        match data {
-            Err(e) => {
-                delivery.acker.nack(BasicNackOptions::default()).await?;
-                if let Err(e) = data_cursor.rewind() {
-                    log::error!("Failed to rewind cursor: {}", e);
-                }
+        let deser_result = deserialize(&mut data_cursor);
+        if deser_result.is_err() {
+            delivery.acker.nack(BasicNackOptions::default()).await?;
+            if let Err(e) = data_cursor.seek(std::io::SeekFrom::Start(0)) {
                 log::error!(
-                    "Failed to deserialize message: {}.  Message is {:?}",
-                    e,
-                    String::from_utf8(data_cursor.into_inner())
+                    "Failed to rewind cursor during Failed to deserialize message: {}",
+                    e
                 );
-                Ok(None)
-            },
-            Ok(data) => Ok(Some(ReadResult {
+            }
+            log::error!(
+                "Failed to deserialize message: {:?}.  Message is {:?}",
+                deser_result,
+                String::from_utf8(data_cursor.into_inner()),
+            );
+        }
+        deser_result.map_err(Error::MsgDecode).map(|data| {
+            Some(ReadResult {
                 data,
                 routing_key: delivery.routing_key.to_string(),
                 acker: delivery.acker,
-            })),
-        }
+            })
+        })
     }
 }
