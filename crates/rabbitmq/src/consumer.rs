@@ -1,6 +1,6 @@
 //! An AMQP consumer configured from a [`QueueType`]
 
-use std::{io::Seek, marker::PhantomData};
+use std::marker::PhantomData;
 
 use futures_util::StreamExt;
 use lapin::{acker::Acker, options::BasicNackOptions, Connection};
@@ -76,7 +76,10 @@ where
         let deser_result = deserialize(data_cursor);
         if deser_result.is_err() {
             delivery.acker.nack(BasicNackOptions::default()).await?;
-            log::error!("FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {:?}.", deser_result);
+            log::error!(
+                "FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {:?}.",
+                deser_result
+            );
         }
         deser_result
             .map_err(|_| Error::Other("error deser message"))
