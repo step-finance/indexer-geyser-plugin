@@ -88,12 +88,14 @@ where
                 String::from_utf8(data_cursor.into_inner()),
             );
         }
-        deser_result.map_err(Error::MsgDecode).map(|data| {
-            Some(ReadResult {
-                data,
-                routing_key: delivery.routing_key.to_string(),
-                acker: delivery.acker,
+        deser_result
+            .map_err(|_| Error::Other("error deser message"))
+            .map(|data| {
+                Some(ReadResult {
+                    data,
+                    routing_key: delivery.routing_key.to_string(),
+                    acker: delivery.acker,
+                })
             })
-        })
     }
 }
