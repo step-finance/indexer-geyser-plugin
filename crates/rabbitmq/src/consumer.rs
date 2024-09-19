@@ -1,9 +1,9 @@
 //! An AMQP consumer configured from a [`QueueType`]
 
-use std::marker::PhantomData;
+use std::{io::{Read, Seek}, marker::PhantomData};
 
 use futures_util::StreamExt;
-use lapin::{acker::Acker, Connection};
+use lapin::{acker::Acker, options::BasicNackOptions, Connection};
 
 use crate::{serialize::deserialize, QueueType, Result};
 
@@ -71,12 +71,24 @@ where
             None => return Ok(None),
         };
 
-        let data = deserialize(std::io::Cursor::new(delivery.data))?;
-
-        Ok(Some(ReadResult {
-            data,
-            routing_key: delivery.routing_key.to_string(),
-            acker: delivery.acker,
-        }))
+        let mut data_cursor: std::io::Cursor<Vec<u8>> = std::io::Cursor::new(delivery.data);
+        let data = deserialize(&mut data_cursor);
+        match data {
+            Err(e) => {
+                delivery.acker.nack(BasicNackOptions::default()).await?;
+                if let Err(e) = data_cursor.rewind() {
+                    log::error!("Failed to rewind cursor: {}", e);
+                }
+                log::error!("Failed to deserialize message: {}.  Message is {:?}", e, String::from_utf8(data_cursor.into_inner()));
+                Ok(None)
+            }
+            Ok(data) => {
+                Ok(Some(ReadResult {
+                    data,
+                    routing_key: delivery.routing_key.to_string(),
+                    acker: delivery.acker,
+                }))
+            }
+        }
     }
 }
