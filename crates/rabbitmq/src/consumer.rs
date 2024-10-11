@@ -3,9 +3,9 @@
 use std::marker::PhantomData;
 
 use futures_util::StreamExt;
-use lapin::{acker::Acker, Connection};
+use lapin::{acker::Acker, options::BasicNackOptions, Connection};
 
-use crate::{serialize::deserialize, QueueType, Result};
+use crate::{serialize::deserialize, Error, QueueType, Result};
 
 /// A consumer consisting of a configured AMQP consumer and queue config
 #[derive(Debug)]
@@ -41,6 +41,7 @@ pub struct ReadResult<Q: QueueType> {
 impl<Q: QueueType> Consumer<Q>
 where
     Q::Message: for<'a> serde::Deserialize<'a>,
+    Q::Message: std::fmt::Debug,
 {
     /// Construct a new consumer from a [`QueueType`]
     ///
@@ -71,12 +72,23 @@ where
             None => return Ok(None),
         };
 
-        let data = deserialize(std::io::Cursor::new(delivery.data))?;
-
-        Ok(Some(ReadResult {
-            data,
-            routing_key: delivery.routing_key.to_string(),
-            acker: delivery.acker,
-        }))
+        let data_cursor: std::io::Cursor<Vec<u8>> = std::io::Cursor::new(delivery.data);
+        let deser_result = deserialize(data_cursor);
+        if deser_result.is_err() {
+            delivery.acker.nack(BasicNackOptions::default()).await?;
+            log::error!(
+                "FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {:?}.",
+                deser_result
+            );
+        }
+        deser_result
+            .map_err(|_| Error::Other("error deser message"))
+            .map(|data| {
+                Some(ReadResult {
+                    data,
+                    routing_key: delivery.routing_key.to_string(),
+                    acker: delivery.acker,
+                })
+            })
     }
 }
