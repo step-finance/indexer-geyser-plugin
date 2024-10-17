@@ -10,7 +10,7 @@
 )]
 #![warn(clippy::pedantic, clippy::cargo, missing_docs)]
 
-pub(crate) use solana_geyser_plugin_interface::geyser_plugin_interface as interface;
+pub(crate) use agave_geyser_plugin_interface::geyser_plugin_interface as interface;
 
 pub(crate) mod prelude {
     pub use std::result::Result as StdResult;

@@ -3,11 +3,11 @@ use std::{
     sync::{mpsc, Arc},
 };
 
+use agave_geyser_plugin_interface::geyser_plugin_interface::{
+    ReplicaBlockInfoVersions, SlotStatus,
+};
 use indexer_rabbitmq::geyser::{
     BlockMetadataNotify, Message, SlotStatusNotify, StartupType, TransactionNotify,
-};
-use solana_geyser_plugin_interface::geyser_plugin_interface::{
-    ReplicaBlockInfoVersions, SlotStatus,
 };
 
 // pub(crate) static TOKEN_KEY: Pubkey =
@@ -466,6 +466,21 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         });
                     },
                     ReplicaBlockInfoVersions::V0_0_3(bi) => {
+                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                            blockhash: String::from(bi.blockhash),
+                            slot: bi.slot,
+                            block_time: bi.block_time.unwrap_or_default(),
+                            block_height: bi.block_height.unwrap_or_default(),
+                        });
+
+                        this.spawn(|this| async move {
+                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.metrics.sends.log(1);
+
+                            Ok(())
+                        });
+                    },
+                    ReplicaBlockInfoVersions::V0_0_4(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
                             blockhash: String::from(bi.blockhash),
                             slot: bi.slot,
