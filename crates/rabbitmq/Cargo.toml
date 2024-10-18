@@ -36,13 +36,13 @@ base64 = "0.13.0"
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = { version = "1.0.79" }
 
-# solana-transaction-status = { path = "../../../solana/transaction-status" }
-# solana-geyser-plugin-interface = { path = "../../../solana/geyser-plugin-interface" }
-# solana-program = { path = "../../../solana/sdk/program", optional = true }
+# solana-transaction-status = { path = "../../../agave/transaction-status" }
+# agave-geyser-plugin-interface = { path = "../../../agave/geyser-plugin-interface" }
+# solana-program = { path = "../../../agave/sdk/program", optional = true }
 
-solana-transaction-status = { version = "=1.18.22" }
-solana-geyser-plugin-interface = { version = "=1.18.22" }
-solana-program = { version = "=1.18.22", optional = true }
+solana-transaction-status = { version = "=2.0.13" }
+agave-geyser-plugin-interface = { version = "=2.0.13" }
+solana-program = { version = "=2.0.13", optional = true }
 
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.30"
