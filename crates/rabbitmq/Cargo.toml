@@ -45,4 +45,4 @@ agave-geyser-plugin-interface = { version = "=2.0.13" }
 solana-program = { version = "=2.0.13", optional = true }
 
 strum = { version = "0.24.1", features = ["derive"] }
-thiserror = "1.0.30"
+thiserror = "1.0.64"
