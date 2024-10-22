@@ -33,7 +33,7 @@ serde_with = "1.11.0"
 tokio-executor-trait = "2.1.0"
 tokio-reactor-trait = "1.1.0"
 itertools = "0.10.4"
-thiserror = "1.0.64"
+thiserror = "1.0.57"
 veil = "0.1.6"
 zstd = "0.12.3"
 
