@@ -13,9 +13,9 @@ use crate::{
 
 #[derive(Debug)]
 pub struct TransactionSelector {
-    /// K = Program, V = routing_key
+    /// K = Program, V = `routing_key`
     programs: HashMap<Pubkey, Arc<String>>,
-    /// K = Program, V = routing_key
+    /// K = Program, V = `routing_key`
     pubkeys: HashMap<Pubkey, Arc<String>>,
     /// Routing prefixes that support routing ALL programs
     allows_all_programs: Vec<Arc<String>>,
