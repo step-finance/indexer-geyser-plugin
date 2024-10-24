@@ -37,7 +37,7 @@ pub struct AccountUpdate {
     pub write_version: u64,
     /// The slot in which this account was updated
     pub slot: u64,
-    /// The block_time in which this account was updated
+    /// The `block_time` in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
     pub block_time: Option<i64>,
     /// True if this update was triggered by a validator startup
@@ -102,7 +102,7 @@ pub struct UiAccountUpdate {
     pub write_version: u64,
     /// The slot in which this account was updated
     pub slot: u64,
-    /// The block_time in which this account was updated
+    /// The `block_time` in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
     pub block_time: Option<i64>,
     /// True if this update was triggered by a validator startup
@@ -124,7 +124,7 @@ pub struct InstructionNotify {
     /// The slot in which the transaction including this instruction was
     /// reported
     pub slot: u64,
-    /// The block_time in which this account was updated
+    /// The `block_time` in which this account was updated
     /// this is not known during processing, but is filled out by confirmooor when slots confirm
     pub block_time: Option<i64>,
 }
