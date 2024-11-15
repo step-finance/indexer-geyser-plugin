@@ -40,9 +40,9 @@ serde_json = { version = "1.0.79" }
 # agave-geyser-plugin-interface = { path = "../../../agave/geyser-plugin-interface" }
 # solana-program = { path = "../../../agave/sdk/program", optional = true }
 
-solana-transaction-status = { version = "=2.0.13" }
-agave-geyser-plugin-interface = { version = "=2.0.13" }
-solana-program = { version = "=2.0.13", optional = true }
+solana-transaction-status = { version = "=2.0.15" }
+agave-geyser-plugin-interface = { version = "=2.0.15" }
+solana-program = { version = "=2.0.15", optional = true }
 
 strum = { version = "0.24.1", features = ["derive"] }
 thiserror = "1.0.30"
