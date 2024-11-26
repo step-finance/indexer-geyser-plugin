@@ -48,10 +48,7 @@
     },
     "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": {
         "pre": true,
-        "post": true,
-        "lengthExclusions": [
-            182
-        ]
+        "post": true
     },
     "hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu": {
         "post": true
