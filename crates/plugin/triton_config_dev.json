@@ -48,10 +48,7 @@
     },
     "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": {
         "pre": true,
-        "post": true,
-        "lengthExclusions": [
-            182
-        ]
+        "post": true
     },
     "hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu": {
         "post": true
@@ -167,6 +164,10 @@
         "post": true
     },
     "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo": {
+        "pre": true,
+        "post": true
+    },
+    "sSo1iU21jBrU9VaJ8PJib1MtorefUV4fzC9GURa2KNn": {
         "pre": true,
         "post": true
     },
