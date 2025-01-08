@@ -415,13 +415,14 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new(
+    pub fn new_with_prefetch(
         network: Network,
         startup_type: StartupType,
         exchange_suffix: &Suffix,
         queue_suffix: &Suffix,
         confirm_level: CommittmentLevel,
         queue_kind: QueueKind,
+        prefetch: u16,
     ) -> Result<Self> {
         let base_name = format!(
             "{}{}.{}.messages",
@@ -442,7 +443,7 @@ impl QueueType {
                 exchange,
                 queue,
                 binding: Binding::Topic(routing_key.into()),
-                prefetch: 32_768,
+                prefetch,
                 max_len_bytes: if queue_suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
                 } else {
@@ -456,6 +457,25 @@ impl QueueType {
                 }),
             },
         })
+    }
+
+    pub fn new(
+        network: Network,
+        startup_type: StartupType,
+        exchange_suffix: &Suffix,
+        queue_suffix: &Suffix,
+        confirm_level: CommittmentLevel,
+        queue_kind: QueueKind,
+    ) -> Result<Self> {
+        Self::new_with_prefetch(
+            network,
+            startup_type,
+            exchange_suffix,
+            queue_suffix,
+            confirm_level,
+            queue_kind,
+            32_768,
+        )
     }
 
     #[must_use]
