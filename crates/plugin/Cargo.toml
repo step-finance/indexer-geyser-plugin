@@ -44,13 +44,13 @@ zstd = "0.12.3"
 # solana-metrics = { path = "../../../agave/metrics" }
 # solana-transaction-status = { path = "../../../agave/transaction-status" }
 
-agave-geyser-plugin-interface = { version = "=2.0.18" }
-solana-logger = { version = "=2.0.18" }
-solana-sdk = { version = "=2.0.18" }
-solana-program = { version = "=2.0.18" }
-solana-metrics = { version = "=2.0.18" }
-solana-transaction-status = { version = "=2.0.18" }
-solana-zk-token-sdk ={ version = "=2.0.18" }
+agave-geyser-plugin-interface = { version = "=2.0.22" }
+solana-logger = { version = "=2.0.22" }
+solana-sdk = { version = "=2.0.22" }
+solana-program = { version = "=2.0.22" }
+solana-metrics = { version = "=2.0.22" }
+solana-transaction-status = { version = "=2.0.22" }
+solana-zk-token-sdk ={ version = "=2.0.22" }
 
 [dependencies.tokio]
 version = "1.18.2"
