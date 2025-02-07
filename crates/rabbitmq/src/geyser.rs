@@ -199,7 +199,7 @@ pub struct BlockMetadataNotify {
 }
 
 /// Message data for an block metadata notification
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotStatusNotify {
     /// the slot
@@ -211,7 +211,7 @@ pub struct SlotStatusNotify {
 }
 
 /// The current status of a slot
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Display)]
+#[derive(Debug, Serialize, Deserialize, Clone, Display)]
 #[serde(rename_all = "camelCase")]
 pub enum SlotStatus {
     /// The highest slot of the heaviest fork processed by the node. Ledger state at this slot is
@@ -224,6 +224,18 @@ pub enum SlotStatus {
 
     /// The highest slot that has been voted on by supermajority of the cluster, ie. is confirmed.
     Confirmed,
+
+    /// First Shred Received
+    FirstShredReceived,
+
+    /// All shreds for the slot have been received.
+    Completed,
+
+    /// A slot is marked dead
+    Dead(String),
+
+    /// A new bank fork is created with the slot
+    CreatedBank,
 }
 
 ///statistics for a slot
