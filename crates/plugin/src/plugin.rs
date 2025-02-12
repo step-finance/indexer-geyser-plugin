@@ -419,15 +419,8 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         SlotStatus::Processed => indexer_rabbitmq::geyser::SlotStatus::Processed,
                         SlotStatus::Confirmed => indexer_rabbitmq::geyser::SlotStatus::Confirmed,
                         SlotStatus::Rooted => indexer_rabbitmq::geyser::SlotStatus::Rooted,
-                        SlotStatus::FirstShredReceived => {
-                            indexer_rabbitmq::geyser::SlotStatus::FirstShredReceived
-                        },
-                        SlotStatus::Completed => indexer_rabbitmq::geyser::SlotStatus::Completed,
-                        SlotStatus::Dead(dead_reason) => {
-                            indexer_rabbitmq::geyser::SlotStatus::Dead(dead_reason.to_string())
-                        },
-                        SlotStatus::CreatedBank => {
-                            indexer_rabbitmq::geyser::SlotStatus::CreatedBank
+                        _ => {
+                            return Ok(());
                         },
                     },
                 });
