@@ -400,7 +400,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
     /// Called when a slot status is updated
     #[allow(unused_variables)]
-    fn update_slot_status(&self, slot: u64, parent: Option<u64>, status: SlotStatus) -> Result<()> {
+    fn update_slot_status(
+        &self,
+        slot: u64,
+        parent: Option<u64>,
+        status: &SlotStatus,
+    ) -> Result<()> {
         self.with_inner(
             || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
             |this| {
@@ -414,6 +419,9 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         SlotStatus::Processed => indexer_rabbitmq::geyser::SlotStatus::Processed,
                         SlotStatus::Confirmed => indexer_rabbitmq::geyser::SlotStatus::Confirmed,
                         SlotStatus::Rooted => indexer_rabbitmq::geyser::SlotStatus::Rooted,
+                        _ => {
+                            return Ok(());
+                        },
                     },
                 });
                 this.spawn(|this| async move {
