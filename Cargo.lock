@@ -56,8 +56,8 @@ dependencies = [
 
 [[package]]
 name = "agave-geyser-plugin-interface"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "log",
  "solana-sdk",
@@ -3057,8 +3057,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "serde",
@@ -3070,8 +3070,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account-decoder"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "Inflector",
  "base64 0.22.1",
@@ -3095,8 +3095,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account-decoder-client-types"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "base64 0.22.1",
  "bs58 0.5.1",
@@ -3110,8 +3110,8 @@ dependencies = [
 
 [[package]]
 name = "solana-account-info"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "serde",
@@ -3122,16 +3122,16 @@ dependencies = [
 
 [[package]]
 name = "solana-atomic-u64"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "parking_lot",
 ]
 
 [[package]]
 name = "solana-bincode"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "serde",
@@ -3140,8 +3140,8 @@ dependencies = [
 
 [[package]]
 name = "solana-bn254"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "ark-bn254",
  "ark-ec",
@@ -3154,8 +3154,8 @@ dependencies = [
 
 [[package]]
 name = "solana-borsh"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "borsh 0.10.3",
  "borsh 1.5.1",
@@ -3163,8 +3163,8 @@ dependencies = [
 
 [[package]]
 name = "solana-clock"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3174,16 +3174,16 @@ dependencies = [
 
 [[package]]
 name = "solana-compute-budget"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-sdk",
 ]
 
 [[package]]
 name = "solana-config-program"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "chrono",
@@ -3197,8 +3197,8 @@ dependencies = [
 
 [[package]]
 name = "solana-cpi"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-account-info",
  "solana-define-syscall",
@@ -3210,8 +3210,8 @@ dependencies = [
 
 [[package]]
 name = "solana-curve25519"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bytemuck",
  "bytemuck_derive",
@@ -3222,21 +3222,21 @@ dependencies = [
 
 [[package]]
 name = "solana-decode-error"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "num-traits",
 ]
 
 [[package]]
 name = "solana-define-syscall"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 
 [[package]]
 name = "solana-derivation-path"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "derivation-path",
  "qstring",
@@ -3245,8 +3245,8 @@ dependencies = [
 
 [[package]]
 name = "solana-epoch-schedule"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3256,8 +3256,8 @@ dependencies = [
 
 [[package]]
 name = "solana-feature-set"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "lazy_static",
  "solana-clock",
@@ -3269,8 +3269,8 @@ dependencies = [
 
 [[package]]
 name = "solana-fee-calculator"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "log",
  "serde",
@@ -3279,8 +3279,8 @@ dependencies = [
 
 [[package]]
 name = "solana-hash"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "borsh 1.5.1",
  "bs58 0.5.1",
@@ -3296,8 +3296,8 @@ dependencies = [
 
 [[package]]
 name = "solana-inflation"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3305,8 +3305,8 @@ dependencies = [
 
 [[package]]
 name = "solana-instruction"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "borsh 1.5.1",
@@ -3322,8 +3322,8 @@ dependencies = [
 
 [[package]]
 name = "solana-last-restart-slot"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3333,16 +3333,16 @@ dependencies = [
 
 [[package]]
 name = "solana-log-collector"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "log",
 ]
 
 [[package]]
 name = "solana-logger"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "env_logger",
  "lazy_static",
@@ -3351,13 +3351,13 @@ dependencies = [
 
 [[package]]
 name = "solana-measure"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 
 [[package]]
 name = "solana-metrics"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
@@ -3370,21 +3370,21 @@ dependencies = [
 
 [[package]]
 name = "solana-msg"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-define-syscall",
 ]
 
 [[package]]
 name = "solana-native-token"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 
 [[package]]
 name = "solana-packet"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "bitflags 2.8.0",
@@ -3396,8 +3396,8 @@ dependencies = [
 
 [[package]]
 name = "solana-precompile-error"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "num-traits",
  "solana-decode-error",
@@ -3405,8 +3405,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -3477,8 +3477,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program-entrypoint"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-account-info",
  "solana-msg",
@@ -3488,8 +3488,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program-error"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "borsh 1.5.1",
  "num-traits",
@@ -3503,8 +3503,8 @@ dependencies = [
 
 [[package]]
 name = "solana-program-memory"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "num-traits",
  "solana-define-syscall",
@@ -3512,21 +3512,21 @@ dependencies = [
 
 [[package]]
 name = "solana-program-option"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 
 [[package]]
 name = "solana-program-pack"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-program-error",
 ]
 
 [[package]]
 name = "solana-program-runtime"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -3554,8 +3554,8 @@ dependencies = [
 
 [[package]]
 name = "solana-pubkey"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "borsh 0.10.3",
  "borsh 1.5.1",
@@ -3580,8 +3580,8 @@ dependencies = [
 
 [[package]]
 name = "solana-rent"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3591,13 +3591,13 @@ dependencies = [
 
 [[package]]
 name = "solana-sanitize"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 
 [[package]]
 name = "solana-sdk"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bincode",
  "bitflags 2.8.0",
@@ -3659,8 +3659,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk-macro"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bs58 0.5.1",
  "proc-macro2",
@@ -3670,8 +3670,8 @@ dependencies = [
 
 [[package]]
 name = "solana-secp256k1-recover"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "borsh 1.5.1",
  "libsecp256k1",
@@ -3681,8 +3681,8 @@ dependencies = [
 
 [[package]]
 name = "solana-secp256r1-program"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bytemuck",
  "openssl",
@@ -3700,16 +3700,16 @@ checksum = "468aa43b7edb1f9b7b7b686d5c3aeb6630dc1708e86e31343499dd5c4d775183"
 
 [[package]]
 name = "solana-serde-varint"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "solana-serialize-utils"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-instruction",
  "solana-pubkey",
@@ -3718,8 +3718,8 @@ dependencies = [
 
 [[package]]
 name = "solana-sha256-hasher"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "sha2 0.10.8",
  "solana-define-syscall",
@@ -3728,16 +3728,16 @@ dependencies = [
 
 [[package]]
 name = "solana-short-vec"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "solana-signature"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bs58 0.5.1",
  "ed25519-dalek",
@@ -3750,8 +3750,8 @@ dependencies = [
 
 [[package]]
 name = "solana-slot-hashes"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3761,8 +3761,8 @@ dependencies = [
 
 [[package]]
 name = "solana-slot-history"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "bv",
  "serde",
@@ -3772,8 +3772,8 @@ dependencies = [
 
 [[package]]
 name = "solana-stable-layout"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-instruction",
  "solana-pubkey",
@@ -3781,16 +3781,16 @@ dependencies = [
 
 [[package]]
 name = "solana-sysvar-id"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "solana-pubkey",
 ]
 
 [[package]]
 name = "solana-timings"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "eager",
  "enum-iterator",
@@ -3799,8 +3799,8 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-error"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "serde",
  "serde_derive",
@@ -3810,8 +3810,8 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-status"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "Inflector",
  "base64 0.22.1",
@@ -3837,8 +3837,8 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-status-client-types"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -3854,8 +3854,8 @@ dependencies = [
 
 [[package]]
 name = "solana-type-overrides"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "lazy_static",
  "rand 0.8.5",
@@ -3863,8 +3863,8 @@ dependencies = [
 
 [[package]]
 name = "solana-vote"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "itertools 0.12.1",
  "log",
@@ -3876,8 +3876,8 @@ dependencies = [
 
 [[package]]
 name = "solana-zk-token-sdk"
-version = "2.1.11"
-source = "git+https://github.com/step-finance/agave?rev=f3529835e7f90f548e57db75f48af51cef2ed29f#f3529835e7f90f548e57db75f48af51cef2ed29f"
+version = "2.1.16"
+source = "git+https://github.com/step-finance/agave?rev=9bd691f78d3e1a9c281a52e5358a5850b7372cca#9bd691f78d3e1a9c281a52e5358a5850b7372cca"
 dependencies = [
  "aes-gcm-siv",
  "base64 0.22.1",
