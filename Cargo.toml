@@ -28,13 +28,10 @@ inherits = "release"
 # strip = "symbols" # Not supported in the workspace toolchain version
 
 [patch.crates-io]
-solana-transaction-status = { git = 'https://github.com/step-finance/agave', rev = "eaba9badbb32a312f2c4c476ae255775a651e631" }
-solana-sdk = { git = 'https://github.com/step-finance/solana-sdk', rev = "558a5075feced42dd4ed430ab908935d9a6ce922" }
-agave-geyser-plugin-interface = { git = 'https://github.com/step-finance/agave', rev = "eaba9badbb32a312f2c4c476ae255775a651e631" }
-solana-logger = { git = 'https://github.com/step-finance/solana-sdk', rev = "558a5075feced42dd4ed430ab908935d9a6ce922" }
-solana-program = { git = 'https://github.com/step-finance/solana-sdk', rev = "558a5075feced42dd4ed430ab908935d9a6ce922" }
-solana-metrics = { git = 'https://github.com/step-finance/agave', rev = "eaba9badbb32a312f2c4c476ae255775a651e631" }
-solana-zk-token-sdk = { git = 'https://github.com/step-finance/agave', rev = "eaba9badbb32a312f2c4c476ae255775a651e631" }
+solana-transaction-status = { git = 'https://github.com/step-finance/agave', rev = "0a4dd5c7e3d495878ce15eab2d8aeabde3e22a4b" }
+agave-geyser-plugin-interface = { git = 'https://github.com/step-finance/agave', rev = "0a4dd5c7e3d495878ce15eab2d8aeabde3e22a4b" }
+solana-metrics = { git = 'https://github.com/step-finance/agave', rev = "0a4dd5c7e3d495878ce15eab2d8aeabde3e22a4b" }
+solana-zk-token-sdk = { git = 'https://github.com/step-finance/agave', rev = "0a4dd5c7e3d495878ce15eab2d8aeabde3e22a4b" }
 
 # solana-transaction-status = { path = "../agave/transaction-status" }
 # solana-sdk = { path = "../agave/sdk" }
