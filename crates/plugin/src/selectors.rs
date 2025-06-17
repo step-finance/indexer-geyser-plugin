@@ -23,7 +23,7 @@ pub struct TransactionSelector {
 }
 
 impl TransactionSelector {
-    pub fn from_config(config: Transactions) -> Result<Self> {
+    pub fn from_config(config: Transactions, num_shards: u64) -> Result<Self> {
         let Transactions { programs, pubkeys } = config;
 
         let allows_all_programs = programs
@@ -66,6 +66,7 @@ impl TransactionSelector {
         &self,
         tx: &SanitizedTransaction,
         meta: &TransactionStatusMeta,
+        slot: u64,
     ) -> Option<&Arc<String>> {
         //we do not care about votes, for now.
         //technically this makes our sol balance

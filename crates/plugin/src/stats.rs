@@ -51,6 +51,7 @@ impl Stats {
     pub fn create_publisher(
         producer: Arc<Sender>,
         rt: Arc<tokio::runtime::Runtime>,
+        num_shards: u64,
     ) -> mpsc::SyncSender<StatsRequest> {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
         //we use a dedicated worker thread, we don't play in the async dancing sandbox
@@ -75,7 +76,14 @@ impl Stats {
                         if producer.is_stopped() {
                             break;
                         }
-                        stats.process(req.slot, &req.stx, &req.meta, req.is_vote, req.is_err);
+                        stats.process(
+                            req.slot,
+                            &req.stx,
+                            &req.meta,
+                            req.is_vote,
+                            req.is_err,
+                            num_shards,
+                        );
                     },
                     Err(mpsc::RecvTimeoutError::Timeout) => {
                         if producer.is_stopped() {
@@ -109,6 +117,7 @@ impl Stats {
         meta: &TransactionStatusMeta,
         is_vote: bool,
         is_err: bool,
+        num_shards: u64,
     ) {
         //deconstruct the stats so we can borrow the peices mutably
         //independent of each other
@@ -171,7 +180,7 @@ impl Stats {
         //send any stats that are >= SLOT_BUFFER_SIZE slots behind
         //this needs to account for skipping slots
         //so it has to scan array
-        send_stats(slot_stats, slot, producer, rt);
+        send_stats(slot_stats, slot, producer, rt, num_shards);
 
         //now get stats for current slot (should have been reset by send_stats)
         let new_stats = &mut slot_stats[idx];
@@ -193,6 +202,7 @@ fn send_stats(
     slot: u64,
     producer: &Arc<Sender>,
     rt: &Arc<tokio::runtime::Runtime>,
+    num_shards: u64,
 ) {
     let mut stats_to_send = Vec::<SlotStatistics>::with_capacity(4);
     let oldest_slot_not_allowed = slot - SLOT_BUFFER_SIZE as u64;
@@ -211,8 +221,12 @@ fn send_stats(
     rt.spawn(async move {
         for stats in stats_to_send {
             let stats_msg = Message::SlotStatisticsNotify(stats);
+            let shard = slot % num_shards;
             producer
-                .send(stats_msg, "multi.chain.slot_statistics")
+                .send(
+                    stats_msg,
+                    format!("multi.chain.slot_statistics.{shard}").as_str(),
+                )
                 .await;
         }
     });

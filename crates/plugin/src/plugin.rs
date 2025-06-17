@@ -51,6 +51,7 @@ pub(crate) struct Inner {
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
     stats_sender: mpsc::SyncSender<StatsRequest>,
+    num_shards: u64,
 }
 
 impl Inner {
@@ -82,6 +83,10 @@ impl GeyserPluginRabbitMq {
             Some(ref inner) => f(inner).map_err(custom_err(&inner.metrics.errs)),
             None => Err(uninit()),
         }
+    }
+
+    fn get_shard_number(&self, slot: u64) -> u64 {
+        slot % self.expect_inner().num_shards
     }
 }
 
@@ -132,7 +137,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 .map_err(custom_err(&metrics.errs))?;
         }
 
-        let (amqp, jobs, metrics_conf, chain_progress, tx_sel) = Config::read(cfg)
+        let (amqp, jobs, metrics_conf, chain_progress, tx_sel, num_shards) = Config::read(cfg)
             .and_then(Config::into_parts)
             .map_err(custom_err(&metrics.errs))?;
 
@@ -170,7 +175,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         let producer = Arc::new(s_producer);
 
         //create the stats processor
-        let stats_sender = Stats::create_publisher(producer.clone(), rt.clone());
+        let stats_sender = Stats::create_publisher(producer.clone(), rt.clone(), num_shards);
 
         self.0 = Some(Arc::new(Inner {
             rt,
@@ -179,6 +184,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             metrics,
             chain_progress,
             stats_sender,
+            num_shards,
         }));
 
         info!("Plugin loaded");
@@ -247,7 +253,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             slot: u64,
             index_in_block: usize,
         ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
-            match sel.get_route(stx, meta) {
+            match sel.get_route(stx, meta, slot) {
                 None => Ok(None),
                 Some(route) => {
                     //compress the meta
@@ -425,8 +431,11 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         },
                     },
                 });
+                let shard = self.get_shard_number(slot);
                 this.spawn(|this| async move {
-                    this.producer.send(msg, "multi.chain.slot_status").await;
+                    this.producer
+                        .send(msg, format!("multi.chain.slot_status.{shard}").as_str())
+                        .await;
                     this.metrics.sends.log(1);
 
                     Ok(())
@@ -453,10 +462,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_time: bi.block_time.unwrap_or_default(),
                             block_height: bi.block_height.unwrap_or_default(),
                         });
+                        let shard = self.get_shard_number(bi.slot);
                         this.spawn(|this| async move {
-                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.producer
+                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
+                                .await;
                             this.metrics.sends.log(1);
-
                             Ok(())
                         });
                     },
@@ -467,10 +478,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_time: bi.block_time.unwrap_or_default(),
                             block_height: bi.block_height.unwrap_or_default(),
                         });
+                        let shard = self.get_shard_number(bi.slot);
                         this.spawn(|this| async move {
-                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.producer
+                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
+                                .await;
                             this.metrics.sends.log(1);
-
                             Ok(())
                         });
                     },
@@ -481,11 +494,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_time: bi.block_time.unwrap_or_default(),
                             block_height: bi.block_height.unwrap_or_default(),
                         });
-
+                        let shard = self.get_shard_number(bi.slot);
                         this.spawn(|this| async move {
-                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.producer
+                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
+                                .await;
                             this.metrics.sends.log(1);
-
                             Ok(())
                         });
                     },
@@ -496,11 +510,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_time: bi.block_time.unwrap_or_default(),
                             block_height: bi.block_height.unwrap_or_default(),
                         });
-
+                        let shard = self.get_shard_number(bi.slot);
                         this.spawn(|this| async move {
-                            this.producer.send(msg, "multi.chain.block_meta").await;
+                            this.producer
+                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
+                                .await;
                             this.metrics.sends.log(1);
-
                             Ok(())
                         });
                     },
