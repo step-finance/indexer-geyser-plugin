@@ -20,5 +20,6 @@
     },
     "pubkeys": {}
   },
-  "datumProgramInclusions": {}
+  "datumProgramInclusions": {},
+  "numShards": 12
 }

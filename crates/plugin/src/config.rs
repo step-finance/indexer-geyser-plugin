@@ -25,6 +25,8 @@ pub struct Config {
     /// Unused here but is in validator
     #[allow(dead_code)]
     datum_program_inclusions: Option<HashMap<String, DatumInclusion>>,
+
+    num_shards: u64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -90,7 +92,9 @@ impl Config {
         Ok(cfg)
     }
 
-    pub fn into_parts(self) -> Result<(Amqp, Jobs, Metrics, ChainProgress, TransactionSelector)> {
+    pub fn into_parts(
+        self,
+    ) -> Result<(Amqp, Jobs, Metrics, ChainProgress, TransactionSelector, u64)> {
         let Self {
             amqp,
             jobs,
@@ -99,12 +103,13 @@ impl Config {
             transactions,
             libpath: _,
             datum_program_inclusions: _,
+            num_shards,
         } = self;
 
-        let txs = TransactionSelector::from_config(transactions)
+        let txs = TransactionSelector::from_config(transactions, num_shards)
             .context("Failed to create instruction selector")?;
 
-        Ok((amqp, jobs, metrics, chain_progress, txs))
+        Ok((amqp, jobs, metrics, chain_progress, txs, num_shards))
     }
 }
 

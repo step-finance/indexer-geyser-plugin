@@ -56,7 +56,7 @@ pub struct RetryProps {
 pub struct QueueProps {
     pub exchange: String,
     pub queue: String,
-    pub binding: Binding,
+    pub binding: Vec<Binding>,
     pub prefetch: u16,
     pub max_len_bytes: i64,
     pub auto_delete: bool,
@@ -81,14 +81,15 @@ pub const DLX_LIVE_KEY: &str = "live";
 pub const DLX_TRIAGE_KEY: &str = "triage";
 
 #[cfg(any(feature = "producer", feature = "consumer"))]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     async fn exchange_declare(self, chan: &Channel) -> Result<()> {
         chan.exchange_declare(
             self.0.exchange.as_ref(),
-            match self.0.binding {
-                Binding::Topic(_) => ExchangeKind::Topic,
-                Binding::Fanout => ExchangeKind::Fanout,
-                Binding::Direct(_) => ExchangeKind::Direct,
+            match self.0.binding.first() {
+                Some(Binding::Topic(_)) => ExchangeKind::Topic,
+                Some(Binding::Fanout) => ExchangeKind::Fanout,
+                Some(Binding::Direct(_)) => ExchangeKind::Direct,
+                None => ExchangeKind::Direct,
             },
             ExchangeDeclareOptions {
                 durable: true,
@@ -103,7 +104,7 @@ impl<'a> QueueInfo<'a> {
 }
 
 #[cfg(feature = "producer")]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     pub(crate) async fn init_producer(self, chan: &Channel) -> Result<()> {
         self.exchange_declare(chan).await?;
 
@@ -130,7 +131,7 @@ impl<'a> QueueInfo<'a> {
 }
 
 #[cfg(feature = "consumer")]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     fn dl_exchange(self) -> String {
         format!("dlx.{}", self.0.queue)
     }
@@ -213,14 +214,16 @@ impl<'a> QueueInfo<'a> {
         self.exchange_declare(chan).await?;
         self.queue_declare(chan).await?;
 
-        chan.queue_bind(
-            self.0.queue.as_ref(),
-            self.0.exchange.as_ref(),
-            self.0.binding.routing_key(),
-            QueueBindOptions::default(),
-            FieldTable::default(),
-        )
-        .await?;
+        for binding in &self.0.binding {
+            chan.queue_bind(
+                self.0.queue.as_ref(),
+                self.0.exchange.as_ref(),
+                binding.routing_key(),
+                QueueBindOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+        }
 
         chan.basic_qos(self.0.prefetch, BasicQosOptions::default())
             .await?;

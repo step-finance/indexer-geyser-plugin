@@ -6,6 +6,7 @@ use std::{
     time::Duration,
 };
 
+use log::debug;
 use serde::{Deserialize, Serialize};
 pub use solana_program::pubkey::Pubkey;
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
@@ -415,7 +416,7 @@ impl QueueType {
     ///
     /// # Errors
     /// This function fails if the given queue suffix is invalid.
-    pub fn new_with_prefetch(
+    pub fn new_with_prefetch_and_shards(
         network: Network,
         startup_type: StartupType,
         exchange_suffix: &Suffix,
@@ -423,6 +424,8 @@ impl QueueType {
         confirm_level: CommittmentLevel,
         queue_kind: QueueKind,
         prefetch: u16,
+        shard_for_queue_name: Option<usize>,
+        shard_numbers_to_bind: Option<Vec<usize>>,
     ) -> Result<Self> {
         let base_name = format!(
             "{}{}.{}.messages",
@@ -435,14 +438,42 @@ impl QueueType {
             confirm_level,
         );
         let exchange = exchange_suffix.format(base_name.clone(), QueueKind::All)?;
-        let queue = queue_suffix.format(base_name, queue_kind)?;
-        let routing_key = queue_kind.routing_key();
+        let mut queue = queue_suffix.format(base_name, queue_kind)?;
+        debug!("queue before shard: {}", queue);
+        queue = format!(
+            "{}{}",
+            queue,
+            shard_for_queue_name
+                .as_ref()
+                .map_or(String::new(), |v| if *v == 0 {
+                    String::new()
+                } else {
+                    format!(".{v}")
+                })
+        );
+        debug!("queue after shard: {}", queue);
+        //bind on all shards
+        let routing_keys = match &shard_numbers_to_bind {
+            Some(shards) => {
+                let base = queue_kind.routing_key();
+                let mut binding = Vec::with_capacity(shards.len() + 1);
+                for shard in shards {
+                    if *shard == 0 {
+                        //shard 0 also matches base for backward compatibility
+                        binding.push(Binding::Topic(base.to_string()));
+                    }
+                    binding.push(Binding::Topic(format!("{base}.{shard}")));
+                }
+                binding
+            },
+            None => vec![Binding::Topic(queue_kind.routing_key().to_string())],
+        };
 
         Ok(Self {
             props: QueueProps {
                 exchange,
                 queue,
-                binding: Binding::Topic(routing_key.into()),
+                binding: routing_keys,
                 prefetch,
                 max_len_bytes: if queue_suffix.is_debug() {
                     100 * 1024 * 1024 // 100 MiB
@@ -467,7 +498,7 @@ impl QueueType {
         confirm_level: CommittmentLevel,
         queue_kind: QueueKind,
     ) -> Result<Self> {
-        Self::new_with_prefetch(
+        Self::new_with_prefetch_and_shards(
             network,
             startup_type,
             exchange_suffix,
@@ -475,6 +506,30 @@ impl QueueType {
             confirm_level,
             queue_kind,
             32_768,
+            None,
+            None,
+        )
+    }
+
+    pub fn new_with_prefetch(
+        network: Network,
+        startup_type: StartupType,
+        exchange_suffix: &Suffix,
+        queue_suffix: &Suffix,
+        confirm_level: CommittmentLevel,
+        queue_kind: QueueKind,
+        prefetch: u16,
+    ) -> Result<Self> {
+        Self::new_with_prefetch_and_shards(
+            network,
+            startup_type,
+            exchange_suffix,
+            queue_suffix,
+            confirm_level,
+            queue_kind,
+            prefetch,
+            None,
+            None,
         )
     }
 
