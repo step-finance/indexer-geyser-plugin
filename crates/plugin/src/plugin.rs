@@ -246,13 +246,13 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         slot: u64,
     ) -> Result<()> {
         #[inline]
-        fn process_transaction<'a>(
-            sel: &'a TransactionSelector,
+        fn process_transaction(
+            sel: &TransactionSelector,
             stx: &SanitizedTransaction,
             meta: &TransactionStatusMeta,
             slot: u64,
             index_in_block: usize,
-        ) -> anyhow::Result<Option<(Message, &'a Arc<String>)>> {
+        ) -> anyhow::Result<Option<(Message, Arc<String>)>> {
             match sel.get_route(stx, meta, slot) {
                 None => Ok(None),
                 Some(route) => {

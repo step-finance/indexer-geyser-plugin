@@ -81,7 +81,7 @@ pub const DLX_LIVE_KEY: &str = "live";
 pub const DLX_TRIAGE_KEY: &str = "triage";
 
 #[cfg(any(feature = "producer", feature = "consumer"))]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     async fn exchange_declare(self, chan: &Channel) -> Result<()> {
         chan.exchange_declare(
             self.0.exchange.as_ref(),
@@ -104,7 +104,7 @@ impl<'a> QueueInfo<'a> {
 }
 
 #[cfg(feature = "producer")]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     pub(crate) async fn init_producer(self, chan: &Channel) -> Result<()> {
         self.exchange_declare(chan).await?;
 
@@ -131,7 +131,7 @@ impl<'a> QueueInfo<'a> {
 }
 
 #[cfg(feature = "consumer")]
-impl<'a> QueueInfo<'a> {
+impl QueueInfo<'_> {
     fn dl_exchange(self) -> String {
         format!("dlx.{}", self.0.queue)
     }
@@ -214,7 +214,7 @@ impl<'a> QueueInfo<'a> {
         self.exchange_declare(chan).await?;
         self.queue_declare(chan).await?;
 
-        for binding in self.0.binding.iter() {
+        for binding in &self.0.binding {
             chan.queue_bind(
                 self.0.queue.as_ref(),
                 self.0.exchange.as_ref(),

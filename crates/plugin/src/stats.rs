@@ -223,10 +223,7 @@ fn send_stats(
             let stats_msg = Message::SlotStatisticsNotify(stats);
             let shard = slot % num_shards;
             producer
-                .send(
-                    stats_msg,
-                    format!("multi.chain.slot_statistics.{shard}").as_str(),
-                )
+                .send(stats_msg, format!("multi.transaction.{shard}").as_str())
                 .await;
         }
     });

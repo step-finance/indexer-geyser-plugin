@@ -14,12 +14,12 @@ use crate::{
 #[derive(Debug)]
 pub struct TransactionSelector {
     /// K = Program, V = `routing_key`
-    programs: HashMap<Pubkey, Arc<String>>,
+    programs: HashMap<Pubkey, String>,
     /// K = Program, V = `routing_key`
-    pubkeys: HashMap<Pubkey, Arc<String>>,
+    pubkeys: HashMap<Pubkey, String>,
     /// Routing prefixes that support routing ALL programs
-    allows_all_programs: Vec<Arc<String>>,
-    multi_routing_key: Arc<String>,
+    allows_all_programs: Vec<String>,
+    num_shards: u64,
 }
 
 impl TransactionSelector {
@@ -47,7 +47,7 @@ impl TransactionSelector {
             programs,
             pubkeys,
             allows_all_programs,
-            multi_routing_key: Arc::new("multi.transaction".to_string()),
+            num_shards,
         })
     }
 
@@ -57,8 +57,14 @@ impl TransactionSelector {
     }
 
     #[inline]
-    fn make_routing_key(s: &str) -> Arc<String> {
-        Arc::new(format!("{s}.transaction"))
+    fn make_routing_key(s: &str) -> String {
+        format!("{s}.transaction")
+    }
+
+    #[inline]
+    fn make_multi_routing_key(slot: u64, num_shards: u64) -> Arc<String> {
+        let shard = slot % num_shards;
+        Arc::new(format!("multi.transaction.{shard}"))
     }
 
     #[inline]
@@ -67,7 +73,7 @@ impl TransactionSelector {
         tx: &SanitizedTransaction,
         meta: &TransactionStatusMeta,
         slot: u64,
-    ) -> Option<&Arc<String>> {
+    ) -> Option<Arc<String>> {
         //we do not care about votes, for now.
         //technically this makes our sol balance
         //tracking for voting accounts incorrect
@@ -84,7 +90,7 @@ impl TransactionSelector {
             .unique()
             .collect::<Vec<_>>();
         if pubkey_routes.len() > 1 {
-            return Some(&self.multi_routing_key);
+            return Some(Self::make_multi_routing_key(slot, self.num_shards));
         }
 
         //check programs
@@ -110,9 +116,11 @@ impl TransactionSelector {
         first?;
         let second = routes.next();
         if second.is_none() {
-            first
+            let shard = slot % self.num_shards;
+            let first = first.unwrap();
+            Some(Arc::new(format!("{first}.{shard}")))
         } else {
-            Some(&self.multi_routing_key)
+            Some(Self::make_multi_routing_key(slot, self.num_shards))
         }
     }
 }
