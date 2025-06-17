@@ -112,12 +112,10 @@ impl TransactionSelector {
             .take(2); //if > 1 then we use multi anyhow
 
         let mut routes = pubkey_routes.into_iter().chain(program_routes).unique();
-        let first = routes.next();
-        first?;
+        let first = routes.next()?;
         let second = routes.next();
         if second.is_none() {
             let shard = slot % self.num_shards;
-            let first = first.unwrap();
             Some(Arc::new(format!("{first}.{shard}")))
         } else {
             Some(Self::make_multi_routing_key(slot, self.num_shards))
