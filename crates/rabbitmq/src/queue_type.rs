@@ -56,7 +56,7 @@ pub struct RetryProps {
 pub struct QueueProps {
     pub exchange: String,
     pub queue: String,
-    pub binding: Binding,
+    pub binding: Vec<Binding>,
     pub prefetch: u16,
     pub max_len_bytes: i64,
     pub auto_delete: bool,
@@ -85,10 +85,11 @@ impl<'a> QueueInfo<'a> {
     async fn exchange_declare(self, chan: &Channel) -> Result<()> {
         chan.exchange_declare(
             self.0.exchange.as_ref(),
-            match self.0.binding {
-                Binding::Topic(_) => ExchangeKind::Topic,
-                Binding::Fanout => ExchangeKind::Fanout,
-                Binding::Direct(_) => ExchangeKind::Direct,
+            match self.0.binding.first() {
+                Some(Binding::Topic(_)) => ExchangeKind::Topic,
+                Some(Binding::Fanout) => ExchangeKind::Fanout,
+                Some(Binding::Direct(_)) => ExchangeKind::Direct,
+                None => ExchangeKind::Direct,
             },
             ExchangeDeclareOptions {
                 durable: true,
@@ -213,14 +214,16 @@ impl<'a> QueueInfo<'a> {
         self.exchange_declare(chan).await?;
         self.queue_declare(chan).await?;
 
-        chan.queue_bind(
-            self.0.queue.as_ref(),
-            self.0.exchange.as_ref(),
-            self.0.binding.routing_key(),
-            QueueBindOptions::default(),
-            FieldTable::default(),
-        )
-        .await?;
+        for binding in self.0.binding.iter() {
+            chan.queue_bind(
+                self.0.queue.as_ref(),
+                self.0.exchange.as_ref(),
+                binding.routing_key(),
+                QueueBindOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+        }
 
         chan.basic_qos(self.0.prefetch, BasicQosOptions::default())
             .await?;
