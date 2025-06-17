@@ -440,7 +440,17 @@ impl QueueType {
         let exchange = exchange_suffix.format(base_name.clone(), QueueKind::All)?;
         let mut queue = queue_suffix.format(base_name, queue_kind)?;
         debug!("queue before shard: {}", queue);
-        queue = format!("{}{}", queue, shard_for_queue_name.as_ref().map_or(String::new(), |v| if *v == 0 { String::new() } else { format!(".{v}") }));
+        queue = format!(
+            "{}{}",
+            queue,
+            shard_for_queue_name
+                .as_ref()
+                .map_or(String::new(), |v| if *v == 0 {
+                    String::new()
+                } else {
+                    format!(".{v}")
+                })
+        );
         debug!("queue after shard: {}", queue);
         //bind on all shards
         let routing_keys = match &shard_numbers_to_bind {
