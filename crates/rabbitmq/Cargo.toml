@@ -35,12 +35,8 @@ rmp-serde = "1.0.0-beta.2"
 base64 = "0.13.0"
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = { version = "1.0.79" }
-# solana-transaction-status = { path = "../../../agave/transaction-status" }
-# agave-geyser-plugin-interface = { path = "../../../agave/geyser-plugin-interface" }
-# solana-program = { path = "../../../agave/sdk/program", optional = true }
 
-solana-transaction-status = { version = "=2.2.16" }
-agave-geyser-plugin-interface = { version = "=2.2.16" }
+solana-transaction-status = { package = "solana-transaction-status", git = "https://github.com/step-finance/agave", rev = "91c46eaca12de1e76c93acd6728d31ab1441f56e" }
 solana-program = { version = "=2.2.1", optional = true }
 
 strum = { version = "0.24.1", features = ["derive"] }
