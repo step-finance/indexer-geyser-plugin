@@ -322,7 +322,12 @@
         "FarmqiPv5eAj3j1GMdMCMUGXqPUvmquZtMy86QH6rzhG": {
             "pre": true,
             "post": true
+        },
+        "MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms":{
+            "pre": true,
+            "post": true
         }
+
     },
     "numShards": 12
 }
