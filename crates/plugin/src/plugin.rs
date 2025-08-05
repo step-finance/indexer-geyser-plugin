@@ -304,6 +304,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         loaded_addresses: meta.loaded_addresses.clone(),
                         return_data: meta.return_data.clone(),
                         compute_units_consumed: meta.compute_units_consumed,
+                        cost_units: meta.cost_units,
                     };
 
                     //make it pretty

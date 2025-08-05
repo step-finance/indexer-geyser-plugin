@@ -1,4 +1,4 @@
-FROM rust:1.84.1-bullseye as builder
+FROM rust:1.86.0-bullseye as builder
 RUN apt update
 RUN apt install -y build-essential
 WORKDIR /geyser
