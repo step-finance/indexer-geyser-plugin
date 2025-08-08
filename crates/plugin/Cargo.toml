@@ -1,6 +1,6 @@
 [package]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.16.0"
+version = "0.16.1"
 authors = [
   "ryans <ryans@holaplex.com>",
   "Dana <dana@step.finance>",
@@ -38,11 +38,9 @@ veil = "0.1.6"
 zstd = "0.12.3"
 
 # agave-geyser-plugin-interface = { path = "../../../agave/geyser-plugin-interface" }
-# solana-logger = { path = "../../../agave/logger" }
-# solana-sdk = { path = "../../../agave/sdk" }
-# solana-program = { path = "../../../agave/sdk/program" }
 # solana-metrics = { path = "../../../agave/metrics" }
 # solana-transaction-status = { path = "../../../agave/transaction-status" }
+# solana-transaction-status-client-types = { path = "../../../agave/transaction-status-client-types" }
 
 agave-geyser-plugin-interface = { version = "=2.3.6" }
 solana-logger = { version = "=2.3.1" }
