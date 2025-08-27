@@ -1,9 +1,11 @@
 use std::{
+    future::Future,
     sync::{atomic::AtomicBool, Arc},
     thread,
     time::Duration,
 };
 
+use futures::stream::FuturesUnordered;
 use indexer_rabbitmq::{
     geyser::{CommittmentLevel, Message, Producer, QueueKind, QueueType, StartupType},
     lapin::{Connection, ConnectionProperties},
@@ -13,20 +15,22 @@ use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::{
     config,
+    message_collector::AMQPMessageProcessor,
     metrics::{Counter, Metrics},
 };
 
 #[derive(Debug)]
-pub struct Sender {
+pub struct Sender<'a> {
     amqp: config::Amqp,
     name: String,
     startup_type: StartupType,
     producer: RwLock<Producer>,
+    msg_manager: AMQPMessageProcessor<'a>,
     metrics: Arc<Metrics>,
     stop_signal: AtomicBool,
 }
 
-impl Sender {
+impl<'a> Sender<'a> {
     pub async fn new(
         amqp: config::Amqp,
         name: String,
@@ -40,6 +44,7 @@ impl Sender {
             name,
             startup_type,
             producer: RwLock::new(producer),
+            msg_manager: AMQPMessageProcessor::new(),
             metrics,
             stop_signal: AtomicBool::new(false),
         })

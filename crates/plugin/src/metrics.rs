@@ -45,7 +45,6 @@ pub struct Metrics {
     pub sends: Counter,
     pub recvs: Counter,
     pub errs: Counter,
-    // pub reconnects: Counter,
 }
 
 impl Metrics {
@@ -54,7 +53,6 @@ impl Metrics {
             sends: Counter::new("geyser_sends", Level::Info),
             recvs: Counter::new("geyser_recvs", Level::Info),
             errs: Counter::new("geyser_errs", Level::Error),
-            // reconnects: Counter::new("geyser_reconnects", Level::Error),
         })
     }
 }
