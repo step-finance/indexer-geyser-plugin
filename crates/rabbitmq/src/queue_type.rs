@@ -83,6 +83,7 @@ pub const DLX_TRIAGE_KEY: &str = "triage";
 #[cfg(any(feature = "producer", feature = "consumer"))]
 impl QueueInfo<'_> {
     async fn exchange_declare(self, chan: &Channel) -> Result<()> {
+        log::info!("Declaring exchange");
         chan.exchange_declare(
             self.0.exchange.as_ref(),
             match self.0.binding.first() {

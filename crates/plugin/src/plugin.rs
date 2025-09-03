@@ -24,7 +24,7 @@ use crate::{
     async_utils::run_future_on_new_thread,
     config::{ChainProgress, Config},
     interface::{GeyserPlugin, GeyserPluginError, ReplicaTransactionInfoVersions, Result},
-    message_processor::run_message_processor,
+    message_processor::run_message_publisher,
     metrics::{Counter, Metrics},
     prelude::*,
     selectors::TransactionSelector,
@@ -47,7 +47,6 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 
 #[derive(Debug)]
 pub(crate) struct Inner {
-    rt: Arc<tokio::runtime::Runtime>,
     sender: Arc<Sender>,
     amqp_sender: crossbeam::channel::Sender<(Message, String)>,
     tx_sel: TransactionSelector,
@@ -60,23 +59,11 @@ pub(crate) struct Inner {
 /// An instance of the plugin
 #[derive(Debug, Default)]
 #[repr(transparent)]
-pub struct GeyserPluginRabbitMq(Option<Arc<Inner>>);
+pub struct GeyserPluginRabbitMq(Option<Inner>);
 
 impl GeyserPluginRabbitMq {
-    fn expect_inner(&self) -> &Arc<Inner> {
+    fn expect_inner(&self) -> &Inner {
         self.0.as_ref().expect(UNINIT)
-    }
-
-    #[inline]
-    fn with_inner<T>(
-        &self,
-        uninit: impl FnOnce() -> GeyserPluginError,
-        f: impl FnOnce(&Arc<Inner>) -> anyhow::Result<T>,
-    ) -> Result<T> {
-        match self.0 {
-            Some(ref inner) => f(inner).map_err(custom_err(&inner.metrics.errs)),
-            None => Err(uninit()),
-        }
     }
 
     fn get_shard_number(&self, slot: u64) -> u64 {
@@ -146,6 +133,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             env::set_var(VAR, config);
         }
 
+        info!("Build tokio runtime");
         let max_blocking_threads = jobs.blocking.unwrap_or(jobs.limit);
         let rt = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
@@ -154,8 +142,8 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             .max_blocking_threads(max_blocking_threads)
             .build()
             .map_err(custom_err(&metrics.errs))?;
-        let rt = Arc::new(rt);
 
+        info!("Creating Sender");
         let s_sender = rt.block_on(async {
             let sender = Sender::new(
                 amqp,
@@ -172,18 +160,19 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
         let (amqp_sender, amqp_receiver) = crossbeam::channel::bounded(max_msg_buffer_size);
 
-        // start running amqp receiver in background
-        run_future_on_new_thread(run_message_processor(
-            amqp_receiver,
-            sender.clone(),
-            max_blocking_threads,
-        ));
-
-        // create the stats processor
-        let stats_sender = Stats::create_publisher(sender.clone(), rt.clone(), num_shards);
-
-        self.0 = Some(Arc::new(Inner {
+        info!("Running processor thread");
+        // start running amqp receiver in background, using the built tokio runtime
+        run_future_on_new_thread(
+            run_message_publisher(amqp_receiver, sender.clone(), max_blocking_threads),
             rt,
+        );
+
+        info!("Creating stats publisher");
+        // create the stats processor
+        let stats_sender = Stats::create_publisher(sender.clone(), amqp_sender.clone(), num_shards);
+
+        info!("Setting inner");
+        self.0 = Some(Inner {
             sender,
             amqp_sender,
             tx_sel,
@@ -191,7 +180,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             chain_progress,
             stats_sender,
             num_shards,
-        }));
+        });
 
         info!("Plugin loaded");
 
@@ -202,40 +191,23 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
     /// Used for doing cleanup before unload.
     fn on_unload(&mut self) {
         log::info!("Plugin unloading");
-        let Some(mut inner) = self.0.take() else {
+        let Some(inner) = self.0.take() else {
             log::warn!("Plugin already unloaded");
             return;
         };
         log::info!("Shutting down plugin");
         inner.sender.stop();
         log::info!("Signaled producer to stop");
-        //loop trying to unwrap the inner until it's the last reference
-        let inner = loop {
-            let ref_count = Arc::strong_count(&inner);
-            log::info!("Waiting for all references to inner to drop ({ref_count} remaining)");
-            match Arc::try_unwrap(inner) {
-                Ok(inner) => break inner,
-                Err(arc) => {
-                    inner = arc;
-                },
-            }
+
+        let processor_queue = &inner.amqp_sender;
+        while !processor_queue.is_empty() {
+            log::info!(
+                "Waiting for processor queue to drain ({} messages left)",
+                processor_queue.len()
+            );
             std::thread::sleep(std::time::Duration::from_millis(100));
-        };
-        log::info!("All references to inner dropped, shutting down runtime");
-        let Inner { mut rt, .. } = inner;
-        let rt = loop {
-            let ref_count = Arc::strong_count(&rt);
-            log::info!("Waiting for all references to runtime to drop ({ref_count} remaining)");
-            match Arc::try_unwrap(rt) {
-                Ok(inner) => break inner,
-                Err(arc) => {
-                    rt = arc;
-                },
-            }
-            std::thread::sleep(std::time::Duration::from_millis(100));
-        };
-        //shutdown the runtime
-        rt.shutdown_background();
+        }
+
         log::info!("Plugin unloaded");
     }
 
@@ -335,71 +307,72 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             }
         }
 
-        self.with_inner(
-            || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
-            |this| {
-                if this.tx_sel.is_empty() {
-                    return Ok(());
-                }
+        let this = self
+            .0
+            .as_ref()
+            .ok_or_else(|| GeyserPluginError::Custom(anyhow!(UNINIT).into()))?;
+        if this.tx_sel.is_empty() {
+            return Ok(());
+        }
 
-                this.metrics.recvs.log(1);
+        this.metrics.recvs.log(1);
 
-                let stx: &SanitizedTransaction;
-                let meta: &TransactionStatusMeta;
-                let is_vote: bool;
-                let index_in_block: usize;
+        let stx: &SanitizedTransaction;
+        let meta: &TransactionStatusMeta;
+        let is_vote: bool;
+        let index_in_block: usize;
 
-                match transaction {
-                    ReplicaTransactionInfoVersions::V0_0_1(tx) => {
-                        stx = tx.transaction;
-                        meta = tx.transaction_status_meta;
-                        is_vote = tx.is_vote;
-                        index_in_block = 0;
-                    },
-                    ReplicaTransactionInfoVersions::V0_0_2(tx) => {
-                        stx = tx.transaction;
-                        meta = tx.transaction_status_meta;
-                        is_vote = tx.is_vote;
-                        index_in_block = tx.index;
-                    },
-                }
-
-                let is_err = matches!(meta.status, Err(..));
-
-                //send this tx to the stats thread
-                this.stats_sender.send(StatsRequest {
-                    slot,
-                    stx: stx.clone(),
-                    meta: meta.clone(),
-                    is_vote,
-                    is_err,
-                })?;
-
-                //no downstream processing of errors or votes
-                if is_err || is_vote {
-                    return Ok(());
-                }
-
-                //handle tx match
-                if !this.tx_sel.is_empty() {
-                    match process_transaction(&this.tx_sel, stx, meta, slot, index_in_block) {
-                        Ok(Some(m)) => {
-                            let message = m.0;
-                            let route = m.1.clone();
-                            this.amqp_sender.send((message, route)).unwrap();
-                            this.metrics.sends.log(1);
-                        },
-                        Ok(None) => (),
-                        Err(e) => {
-                            warn!("Error processing transaction: {e:?}");
-                            this.metrics.errs.log(1);
-                        },
-                    }
-                }
-
-                Ok(())
+        match transaction {
+            ReplicaTransactionInfoVersions::V0_0_1(tx) => {
+                stx = tx.transaction;
+                meta = tx.transaction_status_meta;
+                is_vote = tx.is_vote;
+                index_in_block = 0;
             },
-        )
+            ReplicaTransactionInfoVersions::V0_0_2(tx) => {
+                stx = tx.transaction;
+                meta = tx.transaction_status_meta;
+                is_vote = tx.is_vote;
+                index_in_block = tx.index;
+            },
+        }
+
+        let is_err = matches!(meta.status, Err(..));
+
+        //send this tx to the stats thread
+        this.stats_sender
+            .send(StatsRequest {
+                slot,
+                stx: stx.clone(),
+                meta: meta.clone(),
+                is_vote,
+                is_err,
+            })
+            .map_err(|_| GeyserPluginError::Custom(anyhow!(UNINIT).into()))?;
+
+        //no downstream processing of errors or votes
+        if is_err || is_vote {
+            return Ok(());
+        }
+
+        //handle tx match
+        if !this.tx_sel.is_empty() {
+            match process_transaction(&this.tx_sel, stx, meta, slot, index_in_block) {
+                Ok(Some(m)) => {
+                    let message = m.0;
+                    let route = m.1.clone();
+                    this.amqp_sender.send((message, route)).unwrap();
+                    this.metrics.sends.log(1);
+                },
+                Ok(None) => (),
+                Err(e) => {
+                    warn!("Error processing transaction: {e:?}");
+                    this.metrics.errs.log(1);
+                },
+            }
+        }
+
+        Ok(())
     }
 
     /// Called when a slot status is updated
@@ -410,101 +383,99 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         parent: Option<u64>,
         status: &SlotStatus,
     ) -> Result<()> {
-        self.with_inner(
-            || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
-            |this| {
-                if !this.chain_progress.slot_status.unwrap_or(false) {
+        let this = self
+            .0
+            .as_ref()
+            .ok_or_else(|| GeyserPluginError::Custom(anyhow!(UNINIT).into()))?;
+        if !this.chain_progress.slot_status.unwrap_or(false) {
+            return Ok(());
+        }
+        let msg = Message::SlotStatusNotify(SlotStatusNotify {
+            slot,
+            parent,
+            status: match status {
+                SlotStatus::Processed => indexer_rabbitmq::geyser::SlotStatus::Processed,
+                SlotStatus::Confirmed => indexer_rabbitmq::geyser::SlotStatus::Confirmed,
+                SlotStatus::Rooted => indexer_rabbitmq::geyser::SlotStatus::Rooted,
+                _ => {
                     return Ok(());
-                }
-                let msg = Message::SlotStatusNotify(SlotStatusNotify {
-                    slot,
-                    parent,
-                    status: match status {
-                        SlotStatus::Processed => indexer_rabbitmq::geyser::SlotStatus::Processed,
-                        SlotStatus::Confirmed => indexer_rabbitmq::geyser::SlotStatus::Confirmed,
-                        SlotStatus::Rooted => indexer_rabbitmq::geyser::SlotStatus::Rooted,
-                        _ => {
-                            return Ok(());
-                        },
-                    },
-                });
-                let shard = self.get_shard_number(slot);
-                this.amqp_sender
-                    .send((msg, format!("multi.chain.slot_status.{shard}")))
-                    .unwrap();
-                this.metrics.sends.log(1);
-
-                Ok(())
+                },
             },
-        )
+        });
+        let shard = self.get_shard_number(slot);
+        this.amqp_sender
+            .send((msg, format!("multi.chain.slot_status.{shard}")))
+            .unwrap();
+        this.metrics.sends.log(1);
+
+        Ok(())
     }
 
     /// Called when block's metadata is updated.
     #[allow(unused_variables)]
     fn notify_block_metadata(&self, blockinfo: ReplicaBlockInfoVersions) -> Result<()> {
-        self.with_inner(
-            || GeyserPluginError::Custom(anyhow!(UNINIT).into()),
-            |this| {
-                if !this.chain_progress.block_meta.unwrap_or(false) {
-                    return Ok(());
-                }
-                match blockinfo {
-                    ReplicaBlockInfoVersions::V0_0_1(bi) => {
-                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
-                            blockhash: String::from(bi.blockhash),
-                            slot: bi.slot,
-                            block_time: bi.block_time.unwrap_or_default(),
-                            block_height: bi.block_height.unwrap_or_default(),
-                        });
-                        let shard = self.get_shard_number(bi.slot);
-                        this.amqp_sender
-                            .send((msg, format!("multi.chain.block_meta.{shard}")))
-                            .unwrap();
-                        this.metrics.sends.log(1);
-                    },
-                    ReplicaBlockInfoVersions::V0_0_2(bi) => {
-                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
-                            blockhash: String::from(bi.blockhash),
-                            slot: bi.slot,
-                            block_time: bi.block_time.unwrap_or_default(),
-                            block_height: bi.block_height.unwrap_or_default(),
-                        });
-                        let shard = self.get_shard_number(bi.slot);
-                        this.amqp_sender
-                            .send((msg, format!("multi.chain.block_meta.{shard}")))
-                            .unwrap();
-                        this.metrics.sends.log(1);
-                    },
-                    ReplicaBlockInfoVersions::V0_0_3(bi) => {
-                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
-                            blockhash: String::from(bi.blockhash),
-                            slot: bi.slot,
-                            block_time: bi.block_time.unwrap_or_default(),
-                            block_height: bi.block_height.unwrap_or_default(),
-                        });
-                        let shard = self.get_shard_number(bi.slot);
-                        this.amqp_sender
-                            .send((msg, format!("multi.chain.block_meta.{shard}")))
-                            .unwrap();
-                        this.metrics.sends.log(1);
-                    },
-                    ReplicaBlockInfoVersions::V0_0_4(bi) => {
-                        let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
-                            blockhash: String::from(bi.blockhash),
-                            slot: bi.slot,
-                            block_time: bi.block_time.unwrap_or_default(),
-                            block_height: bi.block_height.unwrap_or_default(),
-                        });
-                        let shard = self.get_shard_number(bi.slot);
-                        this.amqp_sender
-                            .send((msg, format!("multi.chain.block_meta.{shard}")))
-                            .unwrap();
-                        this.metrics.sends.log(1);
-                    },
-                }
-                Ok(())
+        let this = self
+            .0
+            .as_ref()
+            .ok_or_else(|| GeyserPluginError::Custom(anyhow!(UNINIT).into()))?;
+        if !this.chain_progress.block_meta.unwrap_or(false) {
+            return Ok(());
+        }
+        match blockinfo {
+            ReplicaBlockInfoVersions::V0_0_1(bi) => {
+                let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                    blockhash: String::from(bi.blockhash),
+                    slot: bi.slot,
+                    block_time: bi.block_time.unwrap_or_default(),
+                    block_height: bi.block_height.unwrap_or_default(),
+                });
+                let shard = self.get_shard_number(bi.slot);
+                this.amqp_sender
+                    .send((msg, format!("multi.chain.block_meta.{shard}")))
+                    .unwrap();
+                this.metrics.sends.log(1);
             },
-        )
+            ReplicaBlockInfoVersions::V0_0_2(bi) => {
+                let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                    blockhash: String::from(bi.blockhash),
+                    slot: bi.slot,
+                    block_time: bi.block_time.unwrap_or_default(),
+                    block_height: bi.block_height.unwrap_or_default(),
+                });
+                let shard = self.get_shard_number(bi.slot);
+                this.amqp_sender
+                    .send((msg, format!("multi.chain.block_meta.{shard}")))
+                    .unwrap();
+                this.metrics.sends.log(1);
+            },
+            ReplicaBlockInfoVersions::V0_0_3(bi) => {
+                let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                    blockhash: String::from(bi.blockhash),
+                    slot: bi.slot,
+                    block_time: bi.block_time.unwrap_or_default(),
+                    block_height: bi.block_height.unwrap_or_default(),
+                });
+                let shard = self.get_shard_number(bi.slot);
+                this.amqp_sender
+                    .send((msg, format!("multi.chain.block_meta.{shard}")))
+                    .unwrap();
+                this.metrics.sends.log(1);
+            },
+            ReplicaBlockInfoVersions::V0_0_4(bi) => {
+                let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
+                    blockhash: String::from(bi.blockhash),
+                    slot: bi.slot,
+                    block_time: bi.block_time.unwrap_or_default(),
+                    block_height: bi.block_height.unwrap_or_default(),
+                });
+                let shard = self.get_shard_number(bi.slot);
+                this.amqp_sender
+                    .send((msg, format!("multi.chain.block_meta.{shard}")))
+                    .unwrap();
+                this.metrics.sends.log(1);
+            },
+        }
+        Ok(())
     }
 
     fn account_data_notifications_enabled(&self) -> bool {

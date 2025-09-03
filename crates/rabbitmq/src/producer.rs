@@ -26,6 +26,7 @@ where
     /// This function fails if the channel cannot be created and configured
     /// successfully.
     pub async fn new(conn: &Connection, ty: Q) -> Result<Self> {
+        log::info!("Creating channel");
         let chan = conn.create_channel().await?;
 
         ty.info().init_producer(&chan).await?;

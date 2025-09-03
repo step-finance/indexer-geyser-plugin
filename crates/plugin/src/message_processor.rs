@@ -5,7 +5,7 @@ use indexer_rabbitmq::geyser::Message;
 
 use crate::{async_utils::IntervalTimer, sender::Sender};
 
-pub async fn run_message_processor(
+pub async fn run_message_publisher(
     receiver: crossbeam::channel::Receiver<(Message, String)>,
     sender: Arc<Sender>,
     max_running_futures: usize,
@@ -22,4 +22,6 @@ pub async fn run_message_processor(
             futs.next().await;
         }
     }
+
+    log::warn!("Message publisher thread stopping");
 }
