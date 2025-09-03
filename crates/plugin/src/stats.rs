@@ -56,11 +56,10 @@ impl Stats {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
         //we use a dedicated worker thread, we don't play in the async dancing sandbox
         //that the producer message sender uses
-        rt.clone().spawn_blocking(move || {
+        std::thread::spawn(move || {
             let mut stats = Stats {
                 most_recent_slot_stats: Default::default(),
-                slot_stats: std::iter::repeat::<SlotStatistics>(SlotStatistics::default())
-                    .take(SLOT_BUFFER_SIZE)
+                slot_stats: std::iter::repeat_n(SlotStatistics::default(), SLOT_BUFFER_SIZE)
                     .collect::<Vec<SlotStatistics>>()
                     .try_into()
                     .unwrap(),
@@ -223,7 +222,7 @@ fn send_stats(
             let stats_msg = Message::SlotStatisticsNotify(stats);
             let shard = slot % num_shards;
             producer
-                .send(stats_msg, format!("multi.transaction.{shard}").as_str())
+                .send(stats_msg, format!("multi.transaction.{shard}"))
                 .await;
         }
     });

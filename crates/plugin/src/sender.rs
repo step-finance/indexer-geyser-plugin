@@ -1,11 +1,9 @@
 use std::{
-    future::Future,
     sync::{atomic::AtomicBool, Arc},
     thread,
     time::Duration,
 };
 
-use futures::stream::FuturesUnordered;
 use indexer_rabbitmq::{
     geyser::{CommittmentLevel, Message, Producer, QueueKind, QueueType, StartupType},
     lapin::{Connection, ConnectionProperties},
@@ -15,22 +13,20 @@ use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::{
     config,
-    message_collector::AMQPMessageProcessor,
     metrics::{Counter, Metrics},
 };
 
 #[derive(Debug)]
-pub struct Sender<'a> {
+pub struct Sender {
     amqp: config::Amqp,
     name: String,
     startup_type: StartupType,
-    producer: RwLock<Producer>,
-    msg_manager: AMQPMessageProcessor<'a>,
+    producer: Arc<RwLock<Producer>>,
     metrics: Arc<Metrics>,
     stop_signal: AtomicBool,
 }
 
-impl<'a> Sender<'a> {
+impl Sender {
     pub async fn new(
         amqp: config::Amqp,
         name: String,
@@ -43,8 +39,7 @@ impl<'a> Sender<'a> {
             amqp,
             name,
             startup_type,
-            producer: RwLock::new(producer),
-            msg_manager: AMQPMessageProcessor::new(),
+            producer: Arc::new(RwLock::new(producer)),
             metrics,
             stop_signal: AtomicBool::new(false),
         })
@@ -142,12 +137,12 @@ impl<'a> Sender<'a> {
         Ok(producer)
     }
 
-    pub async fn send(&self, msg: Message, route: &str) {
+    pub async fn send(&self, msg: Message, route: String) {
         #[inline]
         fn log_err<E: std::fmt::Debug>(counter: &'_ Counter) -> impl FnOnce(E) + '_ {
             |err| {
                 counter.log(1);
-                log::error!("{:?}", err);
+                log::error!("{err:?}");
             }
         }
 
@@ -163,7 +158,7 @@ impl<'a> Sender<'a> {
         let prod = self.producer.read().await;
 
         if prod
-            .write(&msg, Some(route))
+            .write(&msg, Some(&route))
             .await
             .map_err(log_err(&metrics.errs))
             .is_err()
@@ -186,7 +181,7 @@ impl<'a> Sender<'a> {
                 };
 
                 if new_prod
-                    .write(&msg, Some(route))
+                    .write(&msg, Some(&route))
                     .await
                     .map_err(log_err(&metrics.errs))
                     .is_ok()

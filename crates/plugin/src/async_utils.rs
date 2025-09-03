@@ -1,5 +1,29 @@
 use std::future::Future;
 
+pub struct IntervalTimer {
+    pub interval: std::time::Duration,
+    last_timestamp: std::time::Instant,
+}
+
+impl IntervalTimer {
+    pub fn new(interval: std::time::Duration) -> Self {
+        Self {
+            last_timestamp: std::time::Instant::now(),
+            interval,
+        }
+    }
+
+    pub fn interval_hit(&mut self) -> bool {
+        let elapsed = self.last_timestamp.elapsed();
+        if elapsed >= self.interval {
+            self.last_timestamp = std::time::Instant::now();
+            true
+        } else {
+            false
+        }
+    }
+}
+
 #[allow(clippy::unwrap_used)]
 pub fn build_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()

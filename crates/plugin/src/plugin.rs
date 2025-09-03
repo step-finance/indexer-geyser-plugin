@@ -21,8 +21,10 @@ use solana_transaction_status::{
 };
 
 use crate::{
+    async_utils::run_future_on_new_thread,
     config::{ChainProgress, Config},
     interface::{GeyserPlugin, GeyserPluginError, ReplicaTransactionInfoVersions, Result},
+    message_processor::run_message_processor,
     metrics::{Counter, Metrics},
     prelude::*,
     selectors::TransactionSelector,
@@ -46,21 +48,13 @@ fn custom_err<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>>(
 #[derive(Debug)]
 pub(crate) struct Inner {
     rt: Arc<tokio::runtime::Runtime>,
-    producer: Arc<Sender>,
+    sender: Arc<Sender>,
+    amqp_sender: crossbeam::channel::Sender<(Message, String)>,
     tx_sel: TransactionSelector,
     metrics: Arc<Metrics>,
     chain_progress: ChainProgress,
     stats_sender: mpsc::SyncSender<StatsRequest>,
     num_shards: u64,
-}
-
-impl Inner {
-    pub fn spawn<F: std::future::Future<Output = anyhow::Result<()>> + Send + 'static>(
-        self: &Arc<Self>,
-        f: impl FnOnce(Arc<Self>) -> F,
-    ) {
-        self.rt.spawn(f(Arc::clone(self)));
-    }
 }
 
 /// An instance of the plugin
@@ -137,31 +131,33 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 .map_err(custom_err(&metrics.errs))?;
         }
 
-        let (amqp, jobs, metrics_conf, chain_progress, tx_sel, num_shards) = Config::read(cfg)
-            .and_then(Config::into_parts)
-            .map_err(custom_err(&metrics.errs))?;
+        let (amqp, jobs, metrics_conf, chain_progress, tx_sel, num_shards, max_msg_buffer_size) =
+            Config::read(cfg)
+                .and_then(Config::into_parts)
+                .map_err(custom_err(&metrics.errs))?;
 
         if let Some(config) = metrics_conf.config {
             const VAR: &str = "SOLANA_METRICS_CONFIG";
 
             if env::var_os(VAR).is_some() {
-                warn!("Overriding existing value for {}", VAR);
+                warn!("Overriding existing value for {VAR}");
             }
 
             env::set_var(VAR, config);
         }
 
+        let max_blocking_threads = jobs.blocking.unwrap_or(jobs.limit);
         let rt = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .thread_name("geyser-rabbitmq")
             .worker_threads(jobs.limit)
-            .max_blocking_threads(jobs.blocking.unwrap_or(jobs.limit))
+            .max_blocking_threads(max_blocking_threads)
             .build()
             .map_err(custom_err(&metrics.errs))?;
         let rt = Arc::new(rt);
 
-        let s_producer = rt.block_on(async {
-            let producer = Sender::new(
+        let s_sender = rt.block_on(async {
+            let sender = Sender::new(
                 amqp,
                 format!("geyser-rabbitmq-{version}@{host}"),
                 StartupType::Normal,
@@ -170,16 +166,26 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             .await
             .map_err(custom_err(&metrics.errs))?;
 
-            Result::<_>::Ok(producer)
+            Result::<_>::Ok(sender)
         })?;
-        let producer = Arc::new(s_producer);
+        let sender = Arc::new(s_sender);
 
-        //create the stats processor
-        let stats_sender = Stats::create_publisher(producer.clone(), rt.clone(), num_shards);
+        let (amqp_sender, amqp_receiver) = crossbeam::channel::bounded(max_msg_buffer_size);
+
+        // start running amqp receiver in background
+        run_future_on_new_thread(run_message_processor(
+            amqp_receiver,
+            sender.clone(),
+            max_blocking_threads,
+        ));
+
+        // create the stats processor
+        let stats_sender = Stats::create_publisher(sender.clone(), rt.clone(), num_shards);
 
         self.0 = Some(Arc::new(Inner {
             rt,
-            producer,
+            sender,
+            amqp_sender,
             tx_sel,
             metrics,
             chain_progress,
@@ -201,15 +207,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             return;
         };
         log::info!("Shutting down plugin");
-        inner.producer.stop();
+        inner.sender.stop();
         log::info!("Signaled producer to stop");
         //loop trying to unwrap the inner until it's the last reference
         let inner = loop {
             let ref_count = Arc::strong_count(&inner);
-            log::info!(
-                "Waiting for all references to inner to drop ({} remaining)",
-                ref_count
-            );
+            log::info!("Waiting for all references to inner to drop ({ref_count} remaining)");
             match Arc::try_unwrap(inner) {
                 Ok(inner) => break inner,
                 Err(arc) => {
@@ -222,10 +225,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         let Inner { mut rt, .. } = inner;
         let rt = loop {
             let ref_count = Arc::strong_count(&rt);
-            log::info!(
-                "Waiting for all references to runtime to drop ({} remaining)",
-                ref_count
-            );
+            log::info!("Waiting for all references to runtime to drop ({ref_count} remaining)");
             match Arc::try_unwrap(rt) {
                 Ok(inner) => break inner,
                 Err(arc) => {
@@ -252,7 +252,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             meta: &TransactionStatusMeta,
             slot: u64,
             index_in_block: usize,
-        ) -> anyhow::Result<Option<(Message, Arc<String>)>> {
+        ) -> anyhow::Result<Option<(Message, String)>> {
             match sel.get_route(stx, meta, slot) {
                 None => Ok(None),
                 Some(route) => {
@@ -386,16 +386,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         Ok(Some(m)) => {
                             let message = m.0;
                             let route = m.1.clone();
-                            this.spawn(|this| async move {
-                                this.producer.send(message, route.as_str()).await;
-                                this.metrics.sends.log(1);
-
-                                Ok(())
-                            });
+                            this.amqp_sender.send((message, route)).unwrap();
+                            this.metrics.sends.log(1);
                         },
                         Ok(None) => (),
                         Err(e) => {
-                            warn!("Error processing transaction: {:?}", e);
+                            warn!("Error processing transaction: {e:?}");
                             this.metrics.errs.log(1);
                         },
                     }
@@ -419,7 +415,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             |this| {
                 if !this.chain_progress.slot_status.unwrap_or(false) {
                     return Ok(());
-                };
+                }
                 let msg = Message::SlotStatusNotify(SlotStatusNotify {
                     slot,
                     parent,
@@ -433,14 +429,11 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                     },
                 });
                 let shard = self.get_shard_number(slot);
-                this.spawn(|this| async move {
-                    this.producer
-                        .send(msg, format!("multi.chain.slot_status.{shard}").as_str())
-                        .await;
-                    this.metrics.sends.log(1);
+                this.amqp_sender
+                    .send((msg, format!("multi.chain.slot_status.{shard}")))
+                    .unwrap();
+                this.metrics.sends.log(1);
 
-                    Ok(())
-                });
                 Ok(())
             },
         )
@@ -454,7 +447,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
             |this| {
                 if !this.chain_progress.block_meta.unwrap_or(false) {
                     return Ok(());
-                };
+                }
                 match blockinfo {
                     ReplicaBlockInfoVersions::V0_0_1(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
@@ -464,13 +457,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_height: bi.block_height.unwrap_or_default(),
                         });
                         let shard = self.get_shard_number(bi.slot);
-                        this.spawn(|this| async move {
-                            this.producer
-                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
-                                .await;
-                            this.metrics.sends.log(1);
-                            Ok(())
-                        });
+                        this.amqp_sender
+                            .send((msg, format!("multi.chain.block_meta.{shard}")))
+                            .unwrap();
+                        this.metrics.sends.log(1);
                     },
                     ReplicaBlockInfoVersions::V0_0_2(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
@@ -480,13 +470,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_height: bi.block_height.unwrap_or_default(),
                         });
                         let shard = self.get_shard_number(bi.slot);
-                        this.spawn(|this| async move {
-                            this.producer
-                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
-                                .await;
-                            this.metrics.sends.log(1);
-                            Ok(())
-                        });
+                        this.amqp_sender
+                            .send((msg, format!("multi.chain.block_meta.{shard}")))
+                            .unwrap();
+                        this.metrics.sends.log(1);
                     },
                     ReplicaBlockInfoVersions::V0_0_3(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
@@ -496,13 +483,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_height: bi.block_height.unwrap_or_default(),
                         });
                         let shard = self.get_shard_number(bi.slot);
-                        this.spawn(|this| async move {
-                            this.producer
-                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
-                                .await;
-                            this.metrics.sends.log(1);
-                            Ok(())
-                        });
+                        this.amqp_sender
+                            .send((msg, format!("multi.chain.block_meta.{shard}")))
+                            .unwrap();
+                        this.metrics.sends.log(1);
                     },
                     ReplicaBlockInfoVersions::V0_0_4(bi) => {
                         let msg = Message::BlockMetadataNotify(BlockMetadataNotify {
@@ -512,13 +496,10 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                             block_height: bi.block_height.unwrap_or_default(),
                         });
                         let shard = self.get_shard_number(bi.slot);
-                        this.spawn(|this| async move {
-                            this.producer
-                                .send(msg, format!("multi.chain.block_meta.{shard}").as_str())
-                                .await;
-                            this.metrics.sends.log(1);
-                            Ok(())
-                        });
+                        this.amqp_sender
+                            .send((msg, format!("multi.chain.block_meta.{shard}")))
+                            .unwrap();
+                        this.metrics.sends.log(1);
                     },
                 }
                 Ok(())

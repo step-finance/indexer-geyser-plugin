@@ -24,8 +24,8 @@ pub(crate) mod prelude {
 
 mod async_utils;
 pub(crate) mod config;
+mod message_processor;
 pub(crate) mod metrics;
-mod message_collector;
 mod plugin;
 pub(crate) mod selectors;
 pub(crate) mod sender;

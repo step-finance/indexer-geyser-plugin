@@ -62,7 +62,7 @@ fn parse_x_death(
             })
         })
     {
-        debug!("Death: {} in queue {:?} (x{})", reason, queue, count);
+        debug!("Death: {reason} in queue {queue:?} (x{count})");
 
         match reason {
             DeathReason::Rejected | DeathReason::Expired | DeathReason::DeliveryLimit
@@ -111,7 +111,7 @@ async fn try_consume<Q: QueueType>(conn: &Connection, ty: &Q) -> Result<()> {
             },
             RetryAction::Retry(r) if r < inf.max_tries() => {
                 if let Some(delay) = inf.get_delay(r) {
-                    trace!("Retry message (retry {}, delay {}ms)", r, delay);
+                    trace!("Retry message (retry {r}, delay {delay}ms)");
 
                     properties = properties.with_expiration(delay.to_string().into());
 
@@ -129,7 +129,7 @@ async fn try_consume<Q: QueueType>(conn: &Connection, ty: &Q) -> Result<()> {
             },
             RetryAction::Retry(r) => {
                 // We hit the retry limit.  Bye-bye!
-                trace!("Dropping dead letter after {} deaths", r);
+                trace!("Dropping dead letter after {r} deaths");
             },
             RetryAction::RedeliverLive => {
                 trace!("Redelivering dead letter");
@@ -143,7 +143,7 @@ async fn try_consume<Q: QueueType>(conn: &Connection, ty: &Q) -> Result<()> {
                 )
                 .await?;
             },
-        };
+        }
 
         acker.ack(BasicAckOptions::default()).await?;
     }
@@ -161,7 +161,7 @@ pub async fn run<Q: QueueType, S: std::future::Future<Output = ()>>(
         match try_consume(conn.borrow(), &ty).await {
             Ok(()) => (),
             Err(e) => {
-                log::error!("Dead-letter consumer failed: {:?}", e);
+                log::error!("Dead-letter consumer failed: {e:?}");
                 sleep(Duration::from_secs(5)).await;
             },
         }

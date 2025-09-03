@@ -48,6 +48,7 @@ solana-metrics = { version = "=2.3.6" }
 solana-transaction-status = { version = "=2.3.6" }
 solana-transaction-status-client-types = { version = "=2.3.6" }
 solana-zk-token-sdk = { version = "=2.3.6" }
+crossbeam = "0.8.4"
 
 [dependencies.tokio]
 version = "1.18.2"
