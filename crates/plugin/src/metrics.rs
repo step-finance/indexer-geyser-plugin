@@ -11,7 +11,7 @@ use crate::message_processor::QUEUE_DEPTH_REPORT_INTERVAL;
 pub struct GaugeMetric {
     pub name: &'static str,
     last_reported_instant: Mutex<std::time::Instant>,
-    report_interval: Duration,
+    pub report_interval: Duration,
 }
 
 impl GaugeMetric {

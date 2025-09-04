@@ -82,7 +82,6 @@ impl Stats {
                             req.is_err,
                             num_shards,
                         );
-                        metrics.queue_depth.log_value(stats.msg_tx.len());
                     },
                     Err(mpsc::RecvTimeoutError::Timeout) => {
                         if sender.is_stopped() {

@@ -14,6 +14,21 @@ pub async fn run_message_publisher(
     sender: Arc<Sender>,
     max_running_futures: usize,
 ) {
+    log::info!("Message publisher thread starting");
+    let metric_rx_copy = receiver.clone();
+    let metrics_sender_copy = sender.clone();
+    std::thread::spawn(move || {
+        log::info!("Queue depth reporting thread starting");
+        loop {
+            std::thread::sleep(metrics.queue_depth.report_interval);
+            if metrics_sender_copy.is_stopped() {
+                break;
+            }
+            metrics.queue_depth.log_value(metric_rx_copy.len());
+        }
+        log::info!("Queue depth reporting thread stopping");
+    });
+
     let mut futs = FuturesUnordered::new();
 
     loop {
@@ -21,39 +36,32 @@ pub async fn run_message_publisher(
             Ok((msg, route)) => {
                 let fut = sender.send(msg, route);
                 futs.push(fut);
-                metrics.queue_depth.log_value(receiver.len());
                 if futs.len() >= max_running_futures {
                     futs.next().await;
                 }
             },
-            Err(e) => match e {
-                RecvTimeoutError::Timeout => {
-                    if sender.is_stopped() {
-                        // Plugin is stopped, drain remaining futures
-                        while let Some(()) = futs.next().await {}
-                        break;
-                    }
-
-                    // Validator stopped?? Or we're just quicker than the feed somehow (unlikely)
-                    // Either way, just wait out the next future, so we're not limited by the max above
-                    // and we also get as many messages sent out as possible
-
-                    metrics.queue_depth.log_value(receiver.len());
-                    futs.next().await;
-                },
-                RecvTimeoutError::Disconnected => {
-                    // Channel is closed, Drain remaining futures, and break out of loop
+            Err(RecvTimeoutError::Timeout) => {
+                if sender.is_stopped() {
+                    // Plugin is stopped, drain remaining futures
                     while let Some(()) = futs.next().await {}
                     break;
-                },
+                }
+
+                // Validator stopped?? Or we're just quicker than the feed somehow (unlikely)
+                // Either way, just wait out the next future, so we're not limited by the max above
+                // and we also get as many messages sent out as possible
+                futs.next().await;
+            },
+            Err(RecvTimeoutError::Disconnected) => {
+                // Channel is closed, Drain remaining futures, and break out of loop
+                while let Some(()) = futs.next().await {}
+                break;
             },
         }
     }
 
     let remaining_futures = futs.len();
     let remaining_messages = receiver.len();
-    // One final report of metrics before exit
-    metrics.queue_depth.log_value(remaining_messages);
 
     if remaining_futures > 0 || remaining_messages > 0 {
         log::error!(

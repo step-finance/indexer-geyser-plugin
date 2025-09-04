@@ -1,7 +1,11 @@
 [package]
 name = "holaplex-indexer-rabbitmq-geyser"
 version = "0.16.1"
-authors = ["ryans <ryans@holaplex.com>", "Dana <dana@step.finance>"]
+authors = [
+    "ryans <ryans@holaplex.com>",
+    "Dana <dana@step.finance>",
+    "Quellen <quellen@step.finance>",
+]
 edition = "2021"
 description = "Solana Geyser plugin adapter for holaplex-indexer RabbitMQ transport"
 documentation = "https://docs.rs/holaplex-indexer-rabbitmq-geyser"
