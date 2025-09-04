@@ -163,7 +163,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         info!("Running processor thread");
         // start running amqp receiver in background, using the built tokio runtime
         run_future_on_new_thread(
-            run_message_publisher(amqp_receiver, sender.clone(), max_blocking_threads),
+            run_message_publisher(
+                amqp_receiver,
+                metrics.clone(),
+                sender.clone(),
+                max_blocking_threads,
+            ),
             rt,
         );
 
@@ -199,7 +204,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         inner.sender.stop();
         log::info!("Signaled producer to stop");
 
-        let processor_queue = &inner.amqp_sender;
+        let processor_queue = inner.amqp_sender;
         while !processor_queue.is_empty() {
             log::info!(
                 "Waiting for processor queue to drain ({} messages left)",

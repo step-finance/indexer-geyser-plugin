@@ -69,6 +69,9 @@ impl Stats {
             loop {
                 match rx.recv_timeout(d) {
                     Ok(req) => {
+                        if sender.is_stopped() {
+                            break;
+                        }
                         stats.process(
                             req.slot,
                             &req.stx,
@@ -196,7 +199,11 @@ fn send_stats(
     num_shards: u64,
 ) {
     let mut stats_to_send = Vec::<SlotStatistics>::with_capacity(4);
-    let oldest_slot_not_allowed = slot - SLOT_BUFFER_SIZE as u64;
+    let oldest_slot_not_allowed = if slot < SLOT_BUFFER_SIZE as u64 {
+        0
+    } else {
+        slot - SLOT_BUFFER_SIZE as u64
+    };
     for slot_stat in slot_stats.iter_mut().take(SLOT_BUFFER_SIZE) {
         let processing_slot = slot_stat.slot;
         if processing_slot > 0 && processing_slot <= oldest_slot_not_allowed {

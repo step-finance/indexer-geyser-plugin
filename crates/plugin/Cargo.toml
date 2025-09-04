@@ -34,6 +34,7 @@ thiserror = "1.0.30"
 veil = "0.1.6"
 zstd = "0.12.3"
 futures = "0.3.31"
+crossbeam = "0.8.4"
 
 # agave-geyser-plugin-interface = { path = "../../../agave/geyser-plugin-interface" }
 # solana-metrics = { path = "../../../agave/metrics" }
@@ -48,7 +49,6 @@ solana-metrics = { version = "=2.3.6" }
 solana-transaction-status = { version = "=2.3.6" }
 solana-transaction-status-client-types = { version = "=2.3.6" }
 solana-zk-token-sdk = { version = "=2.3.6" }
-crossbeam = "0.8.4"
 
 [dependencies.tokio]
 version = "1.18.2"
