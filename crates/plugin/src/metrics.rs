@@ -10,7 +10,6 @@ use crate::message_processor::QUEUE_DEPTH_REPORT_INTERVAL;
 #[derive(Debug)]
 pub struct GaugeMetric {
     pub name: &'static str,
-    last_reported_instant: Mutex<std::time::Instant>,
     pub report_interval: Duration,
 }
 
@@ -18,17 +17,12 @@ impl GaugeMetric {
     pub fn new(name: &'static str, report_interval: Duration) -> Self {
         Self {
             name,
-            last_reported_instant: Mutex::new(std::time::Instant::now()),
             report_interval,
         }
     }
 
     pub fn log_value(&self, value: usize) {
-        let mut last_reported_instant = self.last_reported_instant.lock();
-        if last_reported_instant.elapsed() > self.report_interval {
-            datapoint_info!(self.name, ("value", value, usize));
-            *last_reported_instant = std::time::Instant::now();
-        }
+        datapoint_info!(self.name, ("value", value, usize));
     }
 }
 
