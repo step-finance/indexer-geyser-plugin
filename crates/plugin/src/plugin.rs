@@ -174,12 +174,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
         info!("Creating stats publisher");
         // create the stats processor
-        let stats_sender = Stats::create_publisher(
-            sender.clone(),
-            amqp_sender.clone(),
-            metrics.clone(),
-            num_shards,
-        );
+        let stats_sender = Stats::create_publisher(sender.clone(), amqp_sender.clone(), num_shards);
 
         info!("Setting inner");
         self.0 = Some(Inner {

@@ -2,7 +2,6 @@ use std::collections::HashSet;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
-use crate::metrics::Metrics;
 use crate::prelude::*;
 use indexer_rabbitmq::geyser::{Message, SlotStatistics};
 use solana_program::instruction::CompiledInstruction;
@@ -50,7 +49,6 @@ impl Stats {
     pub fn create_publisher(
         sender: Arc<Sender>,
         msg_tx: crossbeam::channel::Sender<(Message, String)>,
-        metrics: Arc<Metrics>,
         num_shards: u64,
     ) -> mpsc::SyncSender<StatsRequest> {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
