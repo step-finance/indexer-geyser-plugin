@@ -79,8 +79,8 @@ pub struct Metrics {
 impl Metrics {
     pub fn new_rc() -> Arc<Self> {
         Arc::new(Self {
-            sends: Counter::new("geyser_sends", Level::Debug),
-            recvs: Counter::new("geyser_recvs", Level::Debug),
+            sends: Counter::new("geyser_sends", Level::Info),
+            recvs: Counter::new("geyser_recvs", Level::Info),
             errs: Counter::new("geyser_errs", Level::Error),
             queue_depth: GaugeMetric::new("geyser_queue_depth", QUEUE_DEPTH_REPORT_INTERVAL),
         })
