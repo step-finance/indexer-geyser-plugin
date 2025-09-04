@@ -1,25 +1,34 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use log::Level;
 use parking_lot::Mutex;
 use solana_metrics::{counter::Counter as CounterInner, datapoint_info};
 
+use crate::message_processor::QUEUE_DEPTH_REPORT_INTERVAL;
+
 /// A very simple metric that reports a single value
 #[derive(Debug)]
 pub struct GaugeMetric {
     pub name: &'static str,
+    last_reported_instant: Mutex<std::time::Instant>,
+    report_interval: Duration,
 }
 
 impl GaugeMetric {
-    pub fn new(name: &'static str) -> Self {
-        Self { name }
+    pub fn new(name: &'static str, report_interval: Duration) -> Self {
+        Self {
+            name,
+            last_reported_instant: Mutex::new(std::time::Instant::now()),
+            report_interval,
+        }
     }
 
     pub fn log_value(&self, value: usize) {
-        datapoint_info!(
-            self.name,
-            ("value", value, usize)
-        );
+        let mut last_reported_instant = self.last_reported_instant.lock();
+        if last_reported_instant.elapsed() > self.report_interval {
+            datapoint_info!(self.name, ("value", value, usize));
+            *last_reported_instant = std::time::Instant::now();
+        }
     }
 }
 
@@ -73,7 +82,7 @@ impl Metrics {
             sends: Counter::new("geyser_sends", Level::Debug),
             recvs: Counter::new("geyser_recvs", Level::Debug),
             errs: Counter::new("geyser_errs", Level::Error),
-            queue_depth: GaugeMetric::new("geyser_queue_depth"),
+            queue_depth: GaugeMetric::new("geyser_queue_depth", QUEUE_DEPTH_REPORT_INTERVAL),
         })
     }
 }

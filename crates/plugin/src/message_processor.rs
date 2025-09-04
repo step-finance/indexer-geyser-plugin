@@ -6,7 +6,7 @@ use indexer_rabbitmq::geyser::Message;
 
 use crate::{metrics::Metrics, sender::Sender};
 
-const QUEUE_DEPTH_REPORT_INTERVAL: Duration = Duration::from_secs(1);
+pub const QUEUE_DEPTH_REPORT_INTERVAL: Duration = Duration::from_secs(1);
 
 pub async fn run_message_publisher(
     receiver: crossbeam::channel::Receiver<(Message, String)>,
@@ -14,22 +14,14 @@ pub async fn run_message_publisher(
     sender: Arc<Sender>,
     max_running_futures: usize,
 ) {
-    let mut metrics_last_reported_instant = std::time::Instant::now();
     let mut futs = FuturesUnordered::new();
-
-    let mut report_queue_depth = || {
-        if metrics_last_reported_instant.elapsed() > QUEUE_DEPTH_REPORT_INTERVAL {
-            metrics.queue_depth.log_value(receiver.len());
-            metrics_last_reported_instant = std::time::Instant::now();
-        }
-    };
 
     loop {
         match receiver.recv_timeout(Duration::from_millis(10)) {
             Ok((msg, route)) => {
                 let fut = sender.send(msg, route);
                 futs.push(fut);
-                report_queue_depth();
+                metrics.queue_depth.log_value(receiver.len());
                 if futs.len() >= max_running_futures {
                     futs.next().await;
                 }
@@ -46,7 +38,7 @@ pub async fn run_message_publisher(
                     // Either way, just wait out the next future, so we're not limited by the max above
                     // and we also get as many messages sent out as possible
 
-                    report_queue_depth();
+                    metrics.queue_depth.log_value(receiver.len());
                     futs.next().await;
                 },
                 RecvTimeoutError::Disconnected => {
@@ -65,9 +57,7 @@ pub async fn run_message_publisher(
 
     if remaining_futures > 0 || remaining_messages > 0 {
         log::error!(
-            "Message publisher thread stopping, {} futures remaining and {} messages in queue! There should be 0!",
-            remaining_futures,
-            remaining_messages
+            "Message publisher thread stopping, {remaining_futures} futures remaining and {remaining_messages} messages in queue! There should be 0!"
         );
     } else {
         log::info!(

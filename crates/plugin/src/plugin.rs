@@ -174,7 +174,12 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
         info!("Creating stats publisher");
         // create the stats processor
-        let stats_sender = Stats::create_publisher(sender.clone(), amqp_sender.clone(), num_shards);
+        let stats_sender = Stats::create_publisher(
+            sender.clone(),
+            amqp_sender.clone(),
+            metrics.clone(),
+            num_shards,
+        );
 
         info!("Setting inner");
         self.0 = Some(Inner {
@@ -367,6 +372,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                     let message = m.0;
                     let route = m.1.clone();
                     this.amqp_sender.send((message, route)).unwrap();
+                    this.metrics.queue_depth.log_value(this.amqp_sender.len());
                     this.metrics.sends.log(1);
                 },
                 Ok(None) => (),
@@ -411,6 +417,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         this.amqp_sender
             .send((msg, format!("multi.chain.slot_status.{shard}")))
             .unwrap();
+        this.metrics.queue_depth.log_value(this.amqp_sender.len());
         this.metrics.sends.log(1);
 
         Ok(())
@@ -438,6 +445,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 this.amqp_sender
                     .send((msg, format!("multi.chain.block_meta.{shard}")))
                     .unwrap();
+                this.metrics.queue_depth.log_value(this.amqp_sender.len());
                 this.metrics.sends.log(1);
             },
             ReplicaBlockInfoVersions::V0_0_2(bi) => {
@@ -451,6 +459,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 this.amqp_sender
                     .send((msg, format!("multi.chain.block_meta.{shard}")))
                     .unwrap();
+                this.metrics.queue_depth.log_value(this.amqp_sender.len());
                 this.metrics.sends.log(1);
             },
             ReplicaBlockInfoVersions::V0_0_3(bi) => {
@@ -464,6 +473,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 this.amqp_sender
                     .send((msg, format!("multi.chain.block_meta.{shard}")))
                     .unwrap();
+                this.metrics.queue_depth.log_value(this.amqp_sender.len());
                 this.metrics.sends.log(1);
             },
             ReplicaBlockInfoVersions::V0_0_4(bi) => {
@@ -477,6 +487,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                 this.amqp_sender
                     .send((msg, format!("multi.chain.block_meta.{shard}")))
                     .unwrap();
+                this.metrics.queue_depth.log_value(this.amqp_sender.len());
                 this.metrics.sends.log(1);
             },
         }

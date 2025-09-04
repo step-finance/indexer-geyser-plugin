@@ -20,5 +20,5 @@
   },
   "datumProgramInclusions": {},
   "numShards": 12,
-  "maxMsgBufferSize": 10000
+  "maxMsgBufferSize": 100
 }
