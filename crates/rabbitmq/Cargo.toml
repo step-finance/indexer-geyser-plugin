@@ -1,6 +1,6 @@
 [package]
 name = "holaplex-indexer-rabbitmq"
-version = "0.16.1"
+version = { workspace = true }
 authors = [
   "ryans <ryans@holaplex.com>",
   "Dana <dana@step.finance>",
