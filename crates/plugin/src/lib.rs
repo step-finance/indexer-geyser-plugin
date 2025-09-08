@@ -22,7 +22,9 @@ pub(crate) mod prelude {
     pub type Result<T, E = Error> = StdResult<T, E>;
 }
 
+mod async_utils;
 pub(crate) mod config;
+mod message_processor;
 pub(crate) mod metrics;
 mod plugin;
 pub(crate) mod selectors;

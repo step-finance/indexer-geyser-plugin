@@ -27,6 +27,8 @@ pub struct Config {
     datum_program_inclusions: Option<HashMap<String, DatumInclusion>>,
 
     num_shards: u64,
+
+    max_msg_buffer_size: usize,
 }
 
 #[derive(Deserialize, Debug)]
@@ -87,14 +89,22 @@ impl Config {
         let f = std::fs::File::open(path).context("Failed to open config file")?;
         let cfg = serde_json::from_reader(f).context("Failed to parse config file")?;
 
-        log::info!("{:?}", cfg);
+        log::info!("{cfg:?}");
 
         Ok(cfg)
     }
 
     pub fn into_parts(
         self,
-    ) -> Result<(Amqp, Jobs, Metrics, ChainProgress, TransactionSelector, u64)> {
+    ) -> Result<(
+        Amqp,
+        Jobs,
+        Metrics,
+        ChainProgress,
+        TransactionSelector,
+        u64,
+        usize,
+    )> {
         let Self {
             amqp,
             jobs,
@@ -104,12 +114,21 @@ impl Config {
             libpath: _,
             datum_program_inclusions: _,
             num_shards,
+            max_msg_buffer_size,
         } = self;
 
         let txs = TransactionSelector::from_config(transactions, num_shards)
             .context("Failed to create instruction selector")?;
 
-        Ok((amqp, jobs, metrics, chain_progress, txs, num_shards))
+        Ok((
+            amqp,
+            jobs,
+            metrics,
+            chain_progress,
+            txs,
+            num_shards,
+            max_msg_buffer_size,
+        ))
     }
 }
 

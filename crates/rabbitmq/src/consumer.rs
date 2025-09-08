@@ -77,8 +77,7 @@ where
         if deser_result.is_err() {
             delivery.acker.nack(BasicNackOptions::default()).await?;
             log::error!(
-                "FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {:?}.",
-                deser_result
+                "FATAL REAL BAD ERROR - Failed to deserialize message, will DLQ: {deser_result:?}."
             );
         }
         deser_result

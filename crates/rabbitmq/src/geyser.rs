@@ -439,7 +439,7 @@ impl QueueType {
         );
         let exchange = exchange_suffix.format(base_name.clone(), QueueKind::All)?;
         let mut queue = queue_suffix.format(base_name, queue_kind)?;
-        debug!("queue before shard: {}", queue);
+        debug!("queue before shard: {queue}");
         queue = format!(
             "{}{}",
             queue,
@@ -451,7 +451,7 @@ impl QueueType {
                     format!(".{v}")
                 })
         );
-        debug!("queue after shard: {}", queue);
+        debug!("queue after shard: {queue}");
         //bind on all shards
         let routing_keys = match &shard_numbers_to_bind {
             Some(shards) => {

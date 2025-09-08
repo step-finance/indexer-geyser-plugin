@@ -1,8 +1,30 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use log::Level;
 use parking_lot::Mutex;
-use solana_metrics::counter::Counter as CounterInner;
+use solana_metrics::{counter::Counter as CounterInner, datapoint_info};
+
+use crate::message_processor::QUEUE_DEPTH_REPORT_INTERVAL;
+
+/// A very simple metric that reports a single value
+#[derive(Debug)]
+pub struct GaugeMetric {
+    pub name: &'static str,
+    pub report_interval: Duration,
+}
+
+impl GaugeMetric {
+    pub fn new(name: &'static str, report_interval: Duration) -> Self {
+        Self {
+            name,
+            report_interval,
+        }
+    }
+
+    pub fn log_value(&self, value: usize) {
+        datapoint_info!(self.name, ("value", value, usize));
+    }
+}
 
 // Despite being entirely atomic, Solana's counter still requires a mutable
 // borrow for the inc() method.  So we have to do this awful Mutex<Atomic>
@@ -45,7 +67,7 @@ pub struct Metrics {
     pub sends: Counter,
     pub recvs: Counter,
     pub errs: Counter,
-    // pub reconnects: Counter,
+    pub queue_depth: GaugeMetric,
 }
 
 impl Metrics {
@@ -54,7 +76,7 @@ impl Metrics {
             sends: Counter::new("geyser_sends", Level::Info),
             recvs: Counter::new("geyser_recvs", Level::Info),
             errs: Counter::new("geyser_errs", Level::Error),
-            // reconnects: Counter::new("geyser_reconnects", Level::Error),
+            queue_depth: GaugeMetric::new("geyser_queue_depth", QUEUE_DEPTH_REPORT_INTERVAL),
         })
     }
 }

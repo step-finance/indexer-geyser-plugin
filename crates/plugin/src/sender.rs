@@ -9,6 +9,7 @@ use indexer_rabbitmq::{
     lapin::{Connection, ConnectionProperties},
     suffix::Suffix,
 };
+use log::info;
 use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::{
@@ -21,7 +22,7 @@ pub struct Sender {
     amqp: config::Amqp,
     name: String,
     startup_type: StartupType,
-    producer: RwLock<Producer>,
+    producer: Arc<RwLock<Producer>>,
     metrics: Arc<Metrics>,
     stop_signal: AtomicBool,
 }
@@ -39,7 +40,7 @@ impl Sender {
             amqp,
             name,
             startup_type,
-            producer: RwLock::new(producer),
+            producer: Arc::new(RwLock::new(producer)),
             metrics,
             stop_signal: AtomicBool::new(false),
         })
@@ -68,7 +69,8 @@ impl Sender {
             thread::sleep(Duration::from_millis(delay));
             tries += 1;
 
-            let Ok(conn) = Connection::connect(
+            info!("Connecting to AMQP server...");
+            let conn = match Connection::connect(
                 &amqp.address,
                 ConnectionProperties::default()
                     .with_connection_name(amqp_name.clone())
@@ -76,11 +78,15 @@ impl Sender {
                     .with_reactor(tokio_reactor_trait::Tokio),
             )
             .await
-            else {
-                continue;
+            {
+                Ok(con) => con,
+                Err(e) => {
+                    log::error!("Failed to connect to AMQP server: {e:?}");
+                    continue;
+                },
             };
 
-            let Ok(prod) = Producer::new(
+            let prod = match Producer::new(
                 &conn,
                 QueueType::new(
                     amqp.network,
@@ -92,8 +98,12 @@ impl Sender {
                 )?,
             )
             .await
-            else {
-                continue;
+            {
+                Ok(prod) => prod,
+                Err(e) => {
+                    log::error!("Failed to create producer: {e:?}");
+                    continue;
+                },
             };
 
             break prod;
@@ -137,12 +147,12 @@ impl Sender {
         Ok(producer)
     }
 
-    pub async fn send(&self, msg: Message, route: &str) {
+    pub async fn send(&self, msg: Message, route: String) {
         #[inline]
         fn log_err<E: std::fmt::Debug>(counter: &'_ Counter) -> impl FnOnce(E) + '_ {
             |err| {
                 counter.log(1);
-                log::error!("{:?}", err);
+                log::error!("{err:?}");
             }
         }
 
@@ -158,7 +168,7 @@ impl Sender {
         let prod = self.producer.read().await;
 
         if prod
-            .write(&msg, Some(route))
+            .write(&msg, Some(&route))
             .await
             .map_err(log_err(&metrics.errs))
             .is_err()
@@ -181,7 +191,7 @@ impl Sender {
                 };
 
                 if new_prod
-                    .write(&msg, Some(route))
+                    .write(&msg, Some(&route))
                     .await
                     .map_err(log_err(&metrics.errs))
                     .is_ok()

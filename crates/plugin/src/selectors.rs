@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use hashbrown::HashMap;
 use itertools::Itertools;
 use solana_sdk::transaction::SanitizedTransaction;
@@ -62,9 +60,9 @@ impl TransactionSelector {
     }
 
     #[inline]
-    fn make_multi_routing_key(slot: u64, num_shards: u64) -> Arc<String> {
+    fn make_multi_routing_key(slot: u64, num_shards: u64) -> String {
         let shard = slot % num_shards;
-        Arc::new(format!("multi.transaction.{shard}"))
+        format!("multi.transaction.{shard}")
     }
 
     #[inline]
@@ -73,7 +71,7 @@ impl TransactionSelector {
         tx: &SanitizedTransaction,
         meta: &TransactionStatusMeta,
         slot: u64,
-    ) -> Option<Arc<String>> {
+    ) -> Option<String> {
         //we do not care about votes, for now.
         //technically this makes our sol balance
         //tracking for voting accounts incorrect
@@ -116,7 +114,7 @@ impl TransactionSelector {
         let second = routes.next();
         if second.is_none() {
             let shard = slot % self.num_shards;
-            Some(Arc::new(format!("{first}.{shard}")))
+            Some(format!("{first}.{shard}"))
         } else {
             Some(Self::make_multi_routing_key(slot, self.num_shards))
         }
