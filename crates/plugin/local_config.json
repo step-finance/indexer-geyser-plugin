@@ -19,5 +19,6 @@
     "pubkeys": {}
   },
   "datumProgramInclusions": {},
-  "numShards": 12
+  "numShards": 12,
+  "maxMsgBufferSize": 100
 }

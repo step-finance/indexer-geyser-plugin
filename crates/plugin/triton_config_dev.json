@@ -326,5 +326,6 @@
             "post": true
         }
     },
-    "numShards": 12
+    "numShards": 12,
+    "maxMsgBufferSize": 10000
 }

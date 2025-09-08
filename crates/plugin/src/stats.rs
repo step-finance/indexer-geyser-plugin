@@ -38,10 +38,8 @@ pub(crate) struct Stats {
     ///the block is confirmed (so confirmooor can send it upon confirmation)
     #[allow(clippy::struct_field_names)]
     slot_stats: [SlotStatistics; SLOT_BUFFER_SIZE],
-    ///the rabbitmq sender
-    producer: Arc<Sender>,
-    ///the tokio async runtime to use for sending messages
-    rt: Arc<tokio::runtime::Runtime>,
+    ///the crossbeam sender to use for sending messages
+    msg_tx: crossbeam::channel::Sender<(Message, String)>,
     ///used to identify token program ixs
     token_programs: HashSet<Pubkey>,
 }
@@ -49,23 +47,21 @@ pub(crate) struct Stats {
 impl Stats {
     /// Create a new stats thread and return a handle to send stats requests to it
     pub fn create_publisher(
-        producer: Arc<Sender>,
-        rt: Arc<tokio::runtime::Runtime>,
+        sender: Arc<Sender>,
+        msg_tx: crossbeam::channel::Sender<(Message, String)>,
         num_shards: u64,
     ) -> mpsc::SyncSender<StatsRequest> {
         let (tx, rx) = mpsc::sync_channel::<StatsRequest>(STAT_REQ_BUFFER_SIZE);
         //we use a dedicated worker thread, we don't play in the async dancing sandbox
         //that the producer message sender uses
-        rt.clone().spawn_blocking(move || {
+        std::thread::spawn(move || {
             let mut stats = Stats {
                 most_recent_slot_stats: Default::default(),
-                slot_stats: std::iter::repeat::<SlotStatistics>(SlotStatistics::default())
-                    .take(SLOT_BUFFER_SIZE)
+                slot_stats: std::iter::repeat_n(SlotStatistics::default(), SLOT_BUFFER_SIZE)
                     .collect::<Vec<SlotStatistics>>()
                     .try_into()
                     .unwrap(),
-                producer: producer.clone(),
-                rt,
+                msg_tx,
                 token_programs: Self::get_token_programs(),
             };
             //the thread's endless loop of message processing
@@ -73,7 +69,7 @@ impl Stats {
             loop {
                 match rx.recv_timeout(d) {
                     Ok(req) => {
-                        if producer.is_stopped() {
+                        if sender.is_stopped() {
                             break;
                         }
                         stats.process(
@@ -86,7 +82,7 @@ impl Stats {
                         );
                     },
                     Err(mpsc::RecvTimeoutError::Timeout) => {
-                        if producer.is_stopped() {
+                        if sender.is_stopped() {
                             break;
                         }
                     },
@@ -125,8 +121,7 @@ impl Stats {
             token_programs,
             most_recent_slot_stats,
             slot_stats,
-            producer,
-            rt,
+            msg_tx,
             ..
         } = self;
         //happy, fast path
@@ -180,7 +175,7 @@ impl Stats {
         //send any stats that are >= SLOT_BUFFER_SIZE slots behind
         //this needs to account for skipping slots
         //so it has to scan array
-        send_stats(slot_stats, slot, producer, rt, num_shards);
+        send_stats(slot_stats, slot, msg_tx, num_shards);
 
         //now get stats for current slot (should have been reset by send_stats)
         let new_stats = &mut slot_stats[idx];
@@ -200,12 +195,15 @@ impl Stats {
 fn send_stats(
     slot_stats: &mut [SlotStatistics; SLOT_BUFFER_SIZE],
     slot: u64,
-    producer: &Arc<Sender>,
-    rt: &Arc<tokio::runtime::Runtime>,
+    msg_tx: &crossbeam::channel::Sender<(Message, String)>,
     num_shards: u64,
 ) {
     let mut stats_to_send = Vec::<SlotStatistics>::with_capacity(4);
-    let oldest_slot_not_allowed = slot - SLOT_BUFFER_SIZE as u64;
+    let oldest_slot_not_allowed = if slot < SLOT_BUFFER_SIZE as u64 {
+        0
+    } else {
+        slot - SLOT_BUFFER_SIZE as u64
+    };
     for slot_stat in slot_stats.iter_mut().take(SLOT_BUFFER_SIZE) {
         let processing_slot = slot_stat.slot;
         if processing_slot > 0 && processing_slot <= oldest_slot_not_allowed {
@@ -217,16 +215,13 @@ fn send_stats(
             slot_stat.clear();
         }
     }
-    let producer = producer.clone();
-    rt.spawn(async move {
-        for stats in stats_to_send {
-            let stats_msg = Message::SlotStatisticsNotify(stats);
-            let shard = slot % num_shards;
-            producer
-                .send(stats_msg, format!("multi.transaction.{shard}").as_str())
-                .await;
-        }
-    });
+    for stats in stats_to_send {
+        let stats_msg = Message::SlotStatisticsNotify(stats);
+        let shard = slot % num_shards;
+        msg_tx
+            .send((stats_msg, format!("multi.transaction.{shard}")))
+            .unwrap();
+    }
 }
 
 ///the main logic for updating stats

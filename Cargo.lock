@@ -22,12 +22,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "adler"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
-
-[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -72,7 +66,7 @@ dependencies = [
 [[package]]
 name = "agave-feature-set"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "ahash 0.8.11",
  "solana-epoch-schedule",
@@ -85,7 +79,7 @@ dependencies = [
 [[package]]
 name = "agave-geyser-plugin-interface"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "log",
  "solana-clock",
@@ -98,7 +92,7 @@ dependencies = [
 [[package]]
 name = "agave-reserved-account-keys"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "agave-feature-set",
  "solana-pubkey",
@@ -349,14 +343,13 @@ dependencies = [
 
 [[package]]
 name = "async-compression"
-version = "0.4.3"
+version = "0.4.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb42b2197bf15ccb092b62c74515dbd8b86d0effd934795f6687c93b6e679a2c"
+checksum = "977eb15ea9efd848bb8a4a1a2500347ed7f0bf794edf0dc3ddcf439f43d36b23"
 dependencies = [
- "brotli",
- "flate2",
+ "compression-codecs",
+ "compression-core",
  "futures-core",
- "memchr",
  "pin-project-lite",
  "tokio",
 ]
@@ -461,9 +454,9 @@ dependencies = [
 
 [[package]]
 name = "atomic-waker"
-version = "1.0.0"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "065374052e7df7ee4047b1160cca5e1467a12351a40b3da123c870ba0b8eda2a"
+checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
 name = "atty"
@@ -491,7 +484,7 @@ dependencies = [
  "addr2line",
  "cfg-if",
  "libc",
- "miniz_oxide 0.8.9",
+ "miniz_oxide",
  "object",
  "rustc-demangle",
  "windows-targets 0.52.6",
@@ -670,9 +663,9 @@ dependencies = [
 
 [[package]]
 name = "brotli"
-version = "3.3.4"
+version = "8.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1a0b1dbcc8ae29329621f8d4f0d835787c1c38bb1401979b49d13b0b305ff68"
+checksum = "4bd8b9603c7aa97359dbd97ecf258968c95f3adddd6db2f7e7a5bef101c84560"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -681,9 +674,9 @@ dependencies = [
 
 [[package]]
 name = "brotli-decompressor"
-version = "2.3.2"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59ad2d4653bf5ca36ae797b1f4bb4dbddb60ce49ca4aed8a2ce4829f60425b80"
+checksum = "874bb8112abecc98cbd6d81ea4fa7e94fb9449648c93cc89aa40c81c24d7de03"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -842,6 +835,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "compression-codecs"
+version = "0.4.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "485abf41ac0c8047c07c87c72c8fb3eb5197f6e9d7ded615dfd1a00ae00a0f64"
+dependencies = [
+ "brotli",
+ "compression-core",
+ "flate2",
+ "memchr",
+]
+
+[[package]]
+name = "compression-core"
+version = "0.4.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e47641d3deaf41fb1538ac1f54735925e275eaf3bf4d55c81b137fba797e5cbb"
+
+[[package]]
 name = "concurrent-queue"
 version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -909,11 +920,24 @@ dependencies = [
 
 [[package]]
 name = "crc32fast"
-version = "1.3.2"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
+checksum = "9481c1c90cbf2ac953f07c8d4a58aa3945c425b7185c9154d67a65e4230da511"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "crossbeam"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1137cd7e7fc0fb5d3c5a8678be38ec56e819125d8d7907411fe24ccb943faca8"
+dependencies = [
+ "crossbeam-channel",
+ "crossbeam-deque",
+ "crossbeam-epoch",
+ "crossbeam-queue",
+ "crossbeam-utils",
 ]
 
 [[package]]
@@ -921,6 +945,34 @@ name = "crossbeam-channel"
 version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-deque"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51"
+dependencies = [
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-epoch"
+version = "0.9.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-queue"
+version = "0.3.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f58bbc28f91df819d0aa2a2c00cd19754769c2fad90579b3592b1c9ba7a3115"
 dependencies = [
  "crossbeam-utils",
 ]
@@ -1273,12 +1325,12 @@ checksum = "94474d15a76982be62ca8a39570dccce148d98c238ebb7408b0a21b2c4bdddc4"
 
 [[package]]
 name = "flate2"
-version = "1.0.24"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f82b0f4c27ad9f8bfd1f3208d882da2b09c301bc1c828fd3a00d0216d2fbbff6"
+checksum = "4a3d7db9596fecd151c5f638c0ee5d5bd487b6e0ea232e5dc96d5250f6f94b1d"
 dependencies = [
  "crc32fast",
- "miniz_oxide 0.5.4",
+ "miniz_oxide",
 ]
 
 [[package]]
@@ -1332,10 +1384,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "futures-channel"
-version = "0.3.24"
+name = "futures"
+version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bdd20c28fadd505d0fd6712cdfcb0d4b5648baf45faef7f852afb2399bb050"
+checksum = "65bc07b1a8bc7c85c5f2e110c476c7389b4554ba72af57d8445ea63a576b0876"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "futures-executor",
+ "futures-io",
+ "futures-sink",
+ "futures-task",
+ "futures-util",
+]
+
+[[package]]
+name = "futures-channel"
+version = "0.3.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dff15bf788c671c1934e366d07e30c1814a8ef514e1af724a602e8a2fbe1b10"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -1346,6 +1413,17 @@ name = "futures-core"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f29059c0c2090612e8d742178b0580d2dc940c837851ad723096f87af6663e"
+
+[[package]]
+name = "futures-executor"
+version = "0.3.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e28d1d997f585e54aebc3f97d39e72338912123a67330d723fdbb564d646c9f"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "futures-util",
+]
 
 [[package]]
 name = "futures-io"
@@ -1397,6 +1475,7 @@ version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fa08315bb612088cc391249efdc3bc77536f16c91f6cf495e6fbe85b20a4a81"
 dependencies = [
+ "futures-channel",
  "futures-core",
  "futures-io",
  "futures-macro",
@@ -1464,7 +1543,7 @@ dependencies = [
  "js-sys",
  "libc",
  "r-efi",
- "wasi 0.14.2+wasi-0.2.4",
+ "wasi 0.14.3+wasi-0.2.4",
  "wasm-bindgen",
 ]
 
@@ -1591,6 +1670,8 @@ dependencies = [
  "agave-geyser-plugin-interface",
  "anyhow",
  "bs58 0.4.0",
+ "crossbeam",
+ "futures",
  "hashbrown 0.12.3",
  "holaplex-indexer-rabbitmq",
  "hostname",
@@ -1727,18 +1808,20 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc2b571658e38e0c01b1fdca3bbbe93c00d3d71693ff2770043f8c29bc7d6f80"
+checksum = "eb3aa54a13a0dfe7fbe3a59e0c76093041720fdc77b110cc0fc260fafb4dc51e"
 dependencies = [
+ "atomic-waker",
  "bytes",
  "futures-channel",
- "futures-util",
+ "futures-core",
  "http 1.3.1",
  "http-body 1.0.1",
  "httparse",
  "itoa",
  "pin-project-lite",
+ "pin-utils",
  "smallvec",
  "tokio",
  "want",
@@ -1751,7 +1834,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3c93eb611681b207e1fe55d5a71ecf91572ec8a6705cdb6857f7d8d5242cf58"
 dependencies = [
  "http 1.3.1",
- "hyper 1.6.0",
+ "hyper 1.7.0",
  "hyper-util",
  "rustls 0.23.31",
  "rustls-pki-types",
@@ -1787,7 +1870,7 @@ dependencies = [
  "futures-util",
  "http 1.3.1",
  "http-body 1.0.1",
- "hyper 1.6.0",
+ "hyper 1.7.0",
  "ipnet",
  "libc",
  "percent-encoding",
@@ -2194,15 +2277,6 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96590ba8f175222643a85693f33d26e9c8a015f599c216509b1a6894af675d34"
-dependencies = [
- "adler",
-]
-
-[[package]]
-name = "miniz_oxide"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
@@ -2556,9 +2630,9 @@ dependencies = [
 
 [[package]]
 name = "quinn"
-version = "0.11.8"
+version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "626214629cda6781b6dc1d316ba307189c85ba657213ce642d9c77670f8202c8"
+checksum = "b9e20a958963c291dc322d98411f541009df2ced7b5a4f2bd52337638cfccf20"
 dependencies = [
  "bytes",
  "cfg_aliases",
@@ -2576,9 +2650,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.12"
+version = "0.11.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49df843a9161c85bb8aae55f101bc0bac8bcafd637a620d9122fd7e0b2f7422e"
+checksum = "f1906b49b0c3bc04b5fe5d86a77925ae6524a19b816ae38ce1e426255f1d8a31"
 dependencies = [
  "bytes",
  "getrandom 0.3.3",
@@ -2597,9 +2671,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-udp"
-version = "0.5.13"
+version = "0.5.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcebb1209ee276352ef14ff8732e24cc2b02bbac986cd74a4c81bcb2f9881970"
+checksum = "addec6a0dcad8a8d96a771f815f0eaf55f9d1805756410b39f5fa81332574cbd"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2821,9 +2895,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.22"
+version = "0.12.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbc931937e6ca3a06e3b6c0aa7841849b160a90351d6ab467a8b9b9959767531"
+checksum = "d429f34c8092b2d42c7c93cec323bb4adeb7c67698f70839adec842ec10c7ceb"
 dependencies = [
  "async-compression",
  "base64 0.22.1",
@@ -2834,7 +2908,7 @@ dependencies = [
  "http 1.3.1",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.6.0",
+ "hyper 1.7.0",
  "hyper-rustls",
  "hyper-util",
  "js-sys",
@@ -3325,7 +3399,7 @@ dependencies = [
 [[package]]
 name = "solana-account-decoder"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "Inflector",
  "base64 0.22.1",
@@ -3367,7 +3441,7 @@ dependencies = [
 [[package]]
 name = "solana-account-decoder-client-types"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "base64 0.22.1",
  "bs58 0.5.1",
@@ -3589,7 +3663,7 @@ dependencies = [
 [[package]]
 name = "solana-curve25519"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "bytemuck",
  "bytemuck_derive",
@@ -4010,12 +4084,12 @@ dependencies = [
 [[package]]
 name = "solana-metrics"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "crossbeam-channel",
  "gethostname",
  "log",
- "reqwest 0.12.22",
+ "reqwest 0.12.23",
  "solana-cluster-type",
  "solana-sha256-hasher",
  "solana-time-utils",
@@ -4687,7 +4761,7 @@ dependencies = [
 [[package]]
 name = "solana-svm-feature-set"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 
 [[package]]
 name = "solana-system-interface"
@@ -4821,7 +4895,7 @@ dependencies = [
 [[package]]
 name = "solana-transaction-context"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "bincode",
  "serde",
@@ -4849,7 +4923,7 @@ dependencies = [
 [[package]]
 name = "solana-transaction-status"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "Inflector",
  "agave-reserved-account-keys",
@@ -4892,7 +4966,7 @@ dependencies = [
 [[package]]
 name = "solana-transaction-status-client-types"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "base64 0.22.1",
  "bincode",
@@ -4981,7 +5055,7 @@ dependencies = [
 [[package]]
 name = "solana-zk-token-sdk"
 version = "2.3.6"
-source = "git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5#bb42401bd6336bfeecb5100c0afe96430f7a4ff5"
+source = "git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a#aceb486fd2909fd533a775f485fea585a78b435a"
 dependencies = [
  "aes-gcm-siv",
  "base64 0.22.1",
@@ -4998,7 +5072,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha3",
- "solana-curve25519 2.3.6 (git+https://github.com/step-finance/agave?rev=bb42401bd6336bfeecb5100c0afe96430f7a4ff5)",
+ "solana-curve25519 2.3.6 (git+https://github.com/step-finance/agave?rev=aceb486fd2909fd533a775f485fea585a78b435a)",
  "solana-derivation-path",
  "solana-instruction",
  "solana-pubkey",
@@ -5948,11 +6022,11 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasi"
-version = "0.14.2+wasi-0.2.4"
+version = "0.14.3+wasi-0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9683f9a5a998d873c0d21fcbe3c083009670149a8fab228644b8bd36b2c48cb3"
+checksum = "6a51ae83037bdd272a9e28ce236db8c07016dd0d50c27038b3f407533c030c95"
 dependencies = [
- "wit-bindgen-rt",
+ "wit-bindgen",
 ]
 
 [[package]]
@@ -6315,13 +6389,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "wit-bindgen-rt"
-version = "0.39.0"
+name = "wit-bindgen"
+version = "0.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
-dependencies = [
- "bitflags 2.8.0",
-]
+checksum = "052283831dbae3d879dc7f51f3d92703a316ca49f91540417d38591826127814"
 
 [[package]]
 name = "writeable"
