@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 use itertools::Itertools;
-use solana_sdk::transaction::SanitizedTransaction;
+use solana_transaction::{versioned::VersionedTransaction, VersionedMessage};
 use solana_transaction_status::TransactionStatusMeta;
 
 use crate::{
@@ -68,19 +68,31 @@ impl TransactionSelector {
     #[inline]
     pub fn get_route(
         &self,
-        tx: &SanitizedTransaction,
+        tx: &VersionedTransaction,
         meta: &TransactionStatusMeta,
         slot: u64,
+        // votes should never make it here but do a sanity check
+        is_vote: bool,
     ) -> Option<String> {
         //we do not care about votes, for now.
         //technically this makes our sol balance
         //tracking for voting accounts incorrect
-        if tx.is_simple_vote_transaction() {
+        if is_vote {
             return None;
         }
 
-        let msg = tx.message();
-        let keys = msg.account_keys();
+        let instructions;
+        let keys;
+        match &tx.message {
+            VersionedMessage::Legacy(msg) => {
+                keys = &msg.account_keys;
+                instructions = &msg.instructions;
+            },
+            VersionedMessage::V0(msg) => {
+                keys = &msg.account_keys;
+                instructions = &msg.instructions;
+            },
+        }
 
         let pubkey_routes = keys
             .iter()
@@ -92,8 +104,7 @@ impl TransactionSelector {
         }
 
         //check programs
-        let program_routes = msg
-            .instructions()
+        let program_routes = instructions
             .iter()
             .chain(
                 meta.inner_instructions
@@ -101,10 +112,10 @@ impl TransactionSelector {
                     .flatten()
                     .flat_map(|ii| ii.instructions.iter().map(|i| &i.instruction)),
             )
-            .map(|a| a.program_id_index.into())
+            .map(|a| a.program_id_index)
             .unique()
-            .filter_map(|a| keys.get(a))
-            .filter_map(|a| self.programs.get(a))
+            .filter_map(|a| Some(keys[a as usize]))
+            .filter_map(|a| self.programs.get(&a))
             .chain(self.allows_all_programs.iter())
             .unique()
             .take(2); //if > 1 then we use multi anyhow

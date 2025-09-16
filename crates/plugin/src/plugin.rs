@@ -13,7 +13,7 @@ use indexer_rabbitmq::geyser::{
 // pub(crate) static TOKEN_KEY: Pubkey =
 //     solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
-use solana_sdk::transaction::SanitizedTransaction;
+use solana_transaction::versioned::VersionedTransaction;
 
 use solana_transaction_status::{
     ConfirmedTransactionWithStatusMeta, TransactionStatusMeta, TransactionWithStatusMeta,
@@ -225,12 +225,13 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         #[inline]
         fn process_transaction(
             sel: &TransactionSelector,
-            stx: &SanitizedTransaction,
+            vtx: &VersionedTransaction,
             meta: &TransactionStatusMeta,
             slot: u64,
             index_in_block: usize,
+            is_vote: bool,
         ) -> anyhow::Result<Option<(Message, String)>> {
-            match sel.get_route(stx, meta, slot) {
+            match sel.get_route(vtx, meta, slot, is_vote) {
                 None => Ok(None),
                 Some(route) => {
                     //compress the meta
@@ -289,7 +290,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
                         tx_with_meta: TransactionWithStatusMeta::Complete(
                             VersionedTransactionWithStatusMeta {
                                 meta,
-                                transaction: stx.to_versioned_transaction(),
+                                transaction: vtx.clone(),
                             },
                         ),
                         slot,
@@ -322,24 +323,20 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
         this.metrics.recvs.log(1);
 
-        let stx: &SanitizedTransaction;
+        let vtx: &VersionedTransaction;
         let meta: &TransactionStatusMeta;
         let is_vote: bool;
         let index_in_block: usize;
 
         match transaction {
-            ReplicaTransactionInfoVersions::V0_0_1(tx) => {
-                stx = tx.transaction;
-                meta = tx.transaction_status_meta;
-                is_vote = tx.is_vote;
-                index_in_block = 0;
-            },
-            ReplicaTransactionInfoVersions::V0_0_2(tx) => {
-                stx = tx.transaction;
+            ReplicaTransactionInfoVersions::V0_0_3(tx) => {
+                vtx = tx.transaction;
                 meta = tx.transaction_status_meta;
                 is_vote = tx.is_vote;
                 index_in_block = tx.index;
             },
+            // this enum is forward capat only. V1, V2 shouldnt be here
+            _ => panic!("Expected only V0_0_3 ReplicaTransactionInfoVersions"),
         }
 
         let is_err = matches!(meta.status, Err(..));
@@ -348,7 +345,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
         this.stats_sender
             .send(StatsRequest {
                 slot,
-                stx: stx.clone(),
+                vtx: vtx.clone(),
                 meta: meta.clone(),
                 is_vote,
                 is_err,
@@ -362,7 +359,7 @@ impl GeyserPlugin for GeyserPluginRabbitMq {
 
         //handle tx match
         if !this.tx_sel.is_empty() {
-            match process_transaction(&this.tx_sel, stx, meta, slot, index_in_block) {
+            match process_transaction(&this.tx_sel, vtx, meta, slot, index_in_block, is_vote) {
                 Ok(Some(m)) => {
                     let message = m.0;
                     let route = m.1.clone();

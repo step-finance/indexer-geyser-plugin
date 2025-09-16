@@ -4,8 +4,9 @@ use std::time::Duration;
 
 use crate::prelude::*;
 use indexer_rabbitmq::geyser::{Message, SlotStatistics};
-use solana_program::instruction::CompiledInstruction;
-use solana_sdk::transaction::SanitizedTransaction;
+use solana_sdk::message::compiled_instruction::CompiledInstruction;
+use solana_transaction::versioned::VersionedTransaction;
+use solana_transaction::VersionedMessage;
 use solana_transaction_status::TransactionStatusMeta;
 
 use crate::sender::Sender;
@@ -18,7 +19,7 @@ const LAMPORTS_PER_SIG: u64 = 5000;
 #[derive(Debug)]
 pub(crate) struct StatsRequest {
     pub slot: u64,
-    pub stx: SanitizedTransaction,
+    pub vtx: VersionedTransaction,
     pub meta: TransactionStatusMeta,
     pub is_vote: bool,
     pub is_err: bool,
@@ -74,7 +75,7 @@ impl Stats {
                         }
                         stats.process(
                             req.slot,
-                            &req.stx,
+                            &req.vtx,
                             &req.meta,
                             req.is_vote,
                             req.is_err,
@@ -109,7 +110,7 @@ impl Stats {
     fn process(
         &mut self,
         slot: u64,
-        stx: &SanitizedTransaction,
+        vtx: &VersionedTransaction,
         meta: &TransactionStatusMeta,
         is_vote: bool,
         is_err: bool,
@@ -131,7 +132,7 @@ impl Stats {
             process_slot(
                 most_recent_stats,
                 token_programs,
-                stx,
+                vtx,
                 meta,
                 is_vote,
                 is_err,
@@ -148,7 +149,7 @@ impl Stats {
             process_slot(
                 buffer_slot_stats,
                 token_programs,
-                stx,
+                vtx,
                 meta,
                 is_vote,
                 is_err,
@@ -180,7 +181,7 @@ impl Stats {
         //now get stats for current slot (should have been reset by send_stats)
         let new_stats = &mut slot_stats[idx];
         new_stats.slot = slot;
-        process_slot(new_stats, token_programs, stx, meta, is_vote, is_err);
+        process_slot(new_stats, token_programs, vtx, meta, is_vote, is_err);
 
         //assign to most recent if applicable
         if slot > most_recent_slot_stats.0 {
@@ -229,12 +230,12 @@ fn send_stats(
 fn process_slot(
     stats: &mut SlotStatistics,
     token_programs: &HashSet<Pubkey>,
-    stx: &SanitizedTransaction,
+    vtx: &VersionedTransaction,
     meta: &TransactionStatusMeta,
     is_vote: bool,
     is_err: bool,
 ) {
-    let fee = LAMPORTS_PER_SIG * stx.signatures().len() as u64;
+    let fee = LAMPORTS_PER_SIG * vtx.signatures.len() as u64;
     let fee_priority = meta.fee - fee;
 
     if is_vote && is_err {
@@ -253,8 +254,17 @@ fn process_slot(
         stats.tx_success_fees_priority += fee_priority;
     }
 
-    let msg = stx.message();
-    let accts = msg.account_keys();
+    let msg = &vtx.message;
+    let keys;
+    match &msg {
+        VersionedMessage::Legacy(msg) => {
+            keys = &msg.account_keys;
+        },
+        VersionedMessage::V0(msg) => {
+            keys = &msg.account_keys;
+        },
+    }
+
     let inner_ixs: Vec<(&Pubkey, &CompiledInstruction)> = meta
         .inner_instructions
         .iter()
@@ -262,14 +272,20 @@ fn process_slot(
             ixss.iter().flat_map(|ixs| {
                 ixs.instructions.iter().map(|ix| {
                     (
-                        &accts[ix.instruction.program_id_index as usize],
+                        &keys[ix.instruction.program_id_index as usize],
                         &ix.instruction,
                     )
                 })
             })
         })
         .collect();
-    let all_ixs = msg.program_instructions_iter().chain(inner_ixs);
+
+    let top_level_ixs = msg
+        .instructions()
+        .iter()
+        .map(|ix| (&keys[ix.program_id_index as usize], ix));
+
+    let all_ixs = top_level_ixs.chain(inner_ixs);
     for (pgm_ref, ix_ref) in all_ixs {
         let e = stats.programs.entry(pgm_ref.to_string()).or_default();
         if is_err {
@@ -299,7 +315,7 @@ fn process_slot(
                     //initialize account
                     1 | 16 | 18 => {
                         if ix_ref.accounts.len() > 1 {
-                            let mint = accts[ix_ref.accounts[1] as usize].to_string();
+                            let mint = keys[ix_ref.accounts[1] as usize].to_string();
                             let val = stats.new_token_accounts.entry(mint).or_default();
                             *val += 1;
                         }
@@ -310,5 +326,5 @@ fn process_slot(
         }
     }
 
-    stats.payers.insert(msg.fee_payer().to_string());
+    stats.payers.insert(keys[0].to_string());
 }
