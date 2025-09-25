@@ -327,5 +327,5 @@
         }
     },
     "numShards": 12,
-    "maxMsgBufferSize": 10000
+    "maxMsgBufferSize": 3500000
 }
