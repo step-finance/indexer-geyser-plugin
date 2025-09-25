@@ -6,7 +6,6 @@ use crate::prelude::*;
 use indexer_rabbitmq::geyser::{Message, SlotStatistics};
 use solana_sdk::message::compiled_instruction::CompiledInstruction;
 use solana_transaction::versioned::VersionedTransaction;
-use solana_transaction::VersionedMessage;
 use solana_transaction_status::TransactionStatusMeta;
 
 use crate::sender::Sender;
@@ -255,15 +254,7 @@ fn process_slot(
     }
 
     let msg = &vtx.message;
-    let keys;
-    match &msg {
-        VersionedMessage::Legacy(msg) => {
-            keys = &msg.account_keys;
-        },
-        VersionedMessage::V0(msg) => {
-            keys = &msg.account_keys;
-        },
-    }
+    let keys = msg.static_account_keys();
 
     let inner_ixs: Vec<(&Pubkey, &CompiledInstruction)> = meta
         .inner_instructions

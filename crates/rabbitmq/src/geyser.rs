@@ -543,7 +543,7 @@ impl crate::QueueType for QueueType {
     type Message = Message;
 
     #[inline]
-    fn info(&self) -> crate::queue_type::QueueInfo {
+    fn info(&self) -> crate::queue_type::QueueInfo<'_> {
         (&self.props).into()
     }
 }

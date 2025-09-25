@@ -25,7 +25,7 @@ pub trait QueueType {
     type Message;
 
     /// Expose the underlying queue info for this queue
-    fn info(&self) -> QueueInfo;
+    fn info(&self) -> QueueInfo<'_>;
 }
 
 #[derive(Debug, Clone)]

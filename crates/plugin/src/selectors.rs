@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 use itertools::Itertools;
-use solana_transaction::{versioned::VersionedTransaction, VersionedMessage};
+use solana_transaction::versioned::VersionedTransaction;
 use solana_transaction_status::TransactionStatusMeta;
 
 use crate::{
@@ -80,19 +80,9 @@ impl TransactionSelector {
         if is_vote {
             return None;
         }
+        let instructions = &tx.message.instructions();
 
-        let instructions;
-        let keys;
-        match &tx.message {
-            VersionedMessage::Legacy(msg) => {
-                keys = &msg.account_keys;
-                instructions = &msg.instructions;
-            },
-            VersionedMessage::V0(msg) => {
-                keys = &msg.account_keys;
-                instructions = &msg.instructions;
-            },
-        }
+        let keys = &tx.message.static_account_keys();
 
         let pubkey_routes = keys
             .iter()
