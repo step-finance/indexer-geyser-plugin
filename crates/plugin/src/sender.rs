@@ -112,7 +112,7 @@ impl Sender {
         Ok(producer)
     }
 
-    async fn connect(&self) -> Result<RwLockReadGuard<Producer>, indexer_rabbitmq::Error> {
+    async fn connect(&self) -> Result<RwLockReadGuard<'_, Producer>, indexer_rabbitmq::Error> {
         if self.is_stopped() {
             return Err(indexer_rabbitmq::Error::Other("Sender is stopped"));
         }
