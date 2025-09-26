@@ -1516,7 +1516,7 @@ dependencies = [
 
 [[package]]
 name = "holaplex-indexer-rabbitmq"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "agave-geyser-plugin-interface",
  "base64 0.13.0",
@@ -1537,7 +1537,7 @@ dependencies = [
 
 [[package]]
 name = "holaplex-indexer-rabbitmq-geyser"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "agave-geyser-plugin-interface",
  "anyhow",
