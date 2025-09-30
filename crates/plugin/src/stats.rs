@@ -5,6 +5,7 @@ use std::time::Duration;
 use crate::prelude::*;
 use indexer_rabbitmq::geyser::{Message, SlotStatistics};
 use solana_sdk::message::compiled_instruction::CompiledInstruction;
+use solana_sdk::message::AccountKeys;
 use solana_transaction::versioned::VersionedTransaction;
 use solana_transaction_status::TransactionStatusMeta;
 
@@ -254,7 +255,7 @@ fn process_slot(
     }
 
     let msg = &vtx.message;
-    let keys = msg.static_account_keys();
+    let account_keys = AccountKeys::new(msg.static_account_keys(), Some(&meta.loaded_addresses));
 
     let inner_ixs: Vec<(&Pubkey, &CompiledInstruction)> = meta
         .inner_instructions
@@ -263,7 +264,7 @@ fn process_slot(
             ixss.iter().flat_map(|ixs| {
                 ixs.instructions.iter().map(|ix| {
                     (
-                        &keys[ix.instruction.program_id_index as usize],
+                        &account_keys[ix.instruction.program_id_index as usize],
                         &ix.instruction,
                     )
                 })
@@ -274,7 +275,7 @@ fn process_slot(
     let top_level_ixs = msg
         .instructions()
         .iter()
-        .map(|ix| (&keys[ix.program_id_index as usize], ix));
+        .map(|ix| (&account_keys[ix.program_id_index as usize], ix));
 
     let all_ixs = top_level_ixs.chain(inner_ixs);
     for (pgm_ref, ix_ref) in all_ixs {
@@ -306,7 +307,7 @@ fn process_slot(
                     //initialize account
                     1 | 16 | 18 => {
                         if ix_ref.accounts.len() > 1 {
-                            let mint = keys[ix_ref.accounts[1] as usize].to_string();
+                            let mint = account_keys[ix_ref.accounts[1] as usize].to_string();
                             let val = stats.new_token_accounts.entry(mint).or_default();
                             *val += 1;
                         }
@@ -317,5 +318,5 @@ fn process_slot(
         }
     }
 
-    stats.payers.insert(keys[0].to_string());
+    stats.payers.insert(account_keys[0].to_string());
 }

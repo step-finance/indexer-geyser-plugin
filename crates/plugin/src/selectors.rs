@@ -1,5 +1,6 @@
 use hashbrown::HashMap;
 use itertools::Itertools;
+use solana_sdk::message::AccountKeys;
 use solana_transaction::versioned::VersionedTransaction;
 use solana_transaction_status::TransactionStatusMeta;
 
@@ -82,9 +83,12 @@ impl TransactionSelector {
         }
         let instructions = &tx.message.instructions();
 
-        let keys = &tx.message.static_account_keys();
+        let account_keys = AccountKeys::new(
+            tx.message.static_account_keys(),
+            Some(&meta.loaded_addresses),
+        );
 
-        let pubkey_routes = keys
+        let pubkey_routes = account_keys
             .iter()
             .filter_map(|a| self.pubkeys.get(a))
             .unique()
@@ -104,7 +108,7 @@ impl TransactionSelector {
             )
             .map(|a| a.program_id_index)
             .unique()
-            .filter_map(|a| Some(keys[a as usize]))
+            .filter_map(|a| Some(account_keys[a as usize]))
             .filter_map(|a| self.programs.get(&a))
             .chain(self.allows_all_programs.iter())
             .unique()
