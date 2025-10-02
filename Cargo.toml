@@ -1,7 +1,7 @@
 [workspace]
 members = ["crates/*"]
 resolver = "2"
-package = { version = "0.18.0" }
+package = { version = "0.18.1" }
 
 [profile.release]
 opt-level = 3
